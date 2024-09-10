@@ -1,45 +1,40 @@
-"use client"
+"use client";
 
-import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { PieChart, Pie, Cell } from 'recharts'
+import { useState} from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import StockChart from "./stock-chart";
 
-const lineData = [
-  { name: 'Jan', value: 400 },
-  { name: 'Feb', value: 300 },
-  { name: 'Mar', value: 200 },
-  { name: 'Apr', value: 278 },
-  { name: 'May', value: 189 },
-  { name: 'Jun', value: 239 },
-]
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+
 
 const pieData = [
-  { name: 'Group A', value: 400 },
-  { name: 'Group B', value: 300 },
-  { name: 'Group C', value: 300 },
-  { name: 'Group D', value: 200 },
-]
+  { name: "Group A", value: 400 },
+  { name: "Group B", value: 300 },
+  { name: "Group C", value: 300 },
+  { name: "Group D", value: 200 },
+];
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
 export function Dashboard() {
   const [messages, setMessages] = useState([
-    { text: "Hello! How can I assist you today?", sender: "ai" }
-  ])
-  const [input, setInput] = useState("")
+    { text: "Hello! How can I assist you today?", sender: "ai" },
+  ]);
+  const [input, setInput] = useState("");
 
   const handleSend = () => {
     if (input.trim()) {
-      setMessages([...messages, { text: input, sender: "user" }])
-      // Here you would typically send the message to your AI backend
-      // and then add the AI's response to the messages
-      setMessages(prevMessages => [...prevMessages, { text: "I'm an AI assistant. I'm here to help!", sender: "ai" }])
-      setInput("")
+      setMessages([...messages, { text: input, sender: "user" }]);
+      setInput("");
+      // Here you would typically call an API to get the AI response
+      // For now, we'll just simulate an AI response
+      setTimeout(() => {
+        setMessages(prev => [...prev, { text: "AI response placeholder", sender: "ai" }]);
+      }, 1000);
     }
-  }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -48,22 +43,7 @@ export function Dashboard() {
       </header>
       <main className="flex-1 p-4 lg:p-6 space-y-4">
         <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Line Graph</CardTitle>
-            </CardHeader>
-            <CardContent className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={lineData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="value" stroke="#8884d8" />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+         <StockChart />
           <Card>
             <CardHeader>
               <CardTitle>Pie Chart</CardTitle>
@@ -81,7 +61,10 @@ export function Dashboard() {
                     label
                   >
                     {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
                     ))}
                   </Pie>
                   <Tooltip />
@@ -101,7 +84,9 @@ export function Dashboard() {
                   <div
                     key={index}
                     className={`p-2 rounded-lg ${
-                      message.sender === 'user' ? 'bg-primary text-primary-foreground ml-auto' : 'bg-muted'
+                      message.sender === "user"
+                        ? "bg-primary text-primary-foreground ml-auto"
+                        : "bg-muted"
                     } max-w-[80%] w-fit`}
                   >
                     {message.text}
@@ -113,7 +98,7 @@ export function Dashboard() {
                   placeholder="Type your message..."
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                  onKeyPress={(e) => e.key === "Enter" && handleSend()}
                 />
                 <Button onClick={handleSend}>Send</Button>
               </div>
@@ -122,5 +107,5 @@ export function Dashboard() {
         </Card>
       </main>
     </div>
-  )
+  );
 }
