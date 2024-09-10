@@ -1,27 +1,6 @@
 "use server";
 
-interface StockData {
-  symbol: string;
-  name: string;
-  exchange: string;
-  data: Array<{
-    time: string;
-    price: number;
-  }>;
-}
-
-interface StockListing {
-  symbol: string;
-  name: string;
-  exchange: string;
-}
-
-interface YahooQuote {
-  symbol: string;
-  shortname?: string;
-  longname?: string;
-  exchange: string;
-}
+import { StockData, StockListing, YahooQuote } from "@/types/stock";
 
 export async function fetchStockData(
   symbol: string,

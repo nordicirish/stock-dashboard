@@ -1,29 +1,19 @@
 "use client";
 
-import { useState} from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import StockChart from "./stock-chart";
+import StockChart from "./stock-line-chart";
+import { StockPieChart } from "./stock-pie-chart";
 
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
-
-const pieData = [
-  { name: "Group A", value: 400 },
-  { name: "Group B", value: 300 },
-  { name: "Group C", value: 300 },
-  { name: "Group D", value: 200 },
-];
-
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
 export function Dashboard() {
   const [messages, setMessages] = useState([
     { text: "Hello! How can I assist you today?", sender: "ai" },
   ]);
   const [input, setInput] = useState("");
-
   const handleSend = () => {
     if (input.trim()) {
       setMessages([...messages, { text: input, sender: "user" }]);
@@ -31,7 +21,10 @@ export function Dashboard() {
       // Here you would typically call an API to get the AI response
       // For now, we'll just simulate an AI response
       setTimeout(() => {
-        setMessages(prev => [...prev, { text: "AI response placeholder", sender: "ai" }]);
+        setMessages((prev) => [
+          ...prev,
+          { text: "AI response placeholder", sender: "ai" },
+        ]);
       }, 1000);
     }
   };
@@ -43,35 +36,8 @@ export function Dashboard() {
       </header>
       <main className="flex-1 p-4 lg:p-6 space-y-4">
         <div className="grid gap-4 md:grid-cols-2">
-         <StockChart />
-          <Card>
-            <CardHeader>
-              <CardTitle>Pie Chart</CardTitle>
-            </CardHeader>
-            <CardContent className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <StockChart />
+          <StockPieChart />
         </div>
         <Card>
           <CardHeader>
