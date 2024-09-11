@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useCallback, useRef } from "react";
 import { StockListing } from "@/types/stock";
 import { searchStocks } from "@/app/actions";
@@ -20,7 +22,13 @@ export function StockSearch({ onStockSelect, placeholder = "Search stocks..." }:
   const [stocks, setStocks] = useState<StockListing[]>([]);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
-  const handleSearch = useCallback((value: string) => {
+
+  // useCallback saves this function in memo, preventing unnecessary re-renders
+  // It's used here to optimize performance, especially as this component is a child of other components
+  // The empty dependency array [] means this function is created once and reused across re-renders
+  // It's used to prevent unnecessary re-renders of this component and will only b updated if the input changes
+
+  const handleSearch = useCallback(async (value: string) => {
     setSearchValue(value);
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
@@ -28,7 +36,7 @@ export function StockSearch({ onStockSelect, placeholder = "Search stocks..." }:
     debounceTimer.current = setTimeout(async () => {
       try {
         const results = await searchStocks(value);
-        setStocks(results || []);
+        setStocks(results);
       } catch (error) {
         console.error("Error searching stocks:", error);
         setStocks([]);
