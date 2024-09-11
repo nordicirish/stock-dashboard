@@ -1,7 +1,11 @@
 "use server";
 
-import { prisma } from '@/lib/prisma';
+
 import { StockData, StockListing, YahooQuote, Stock } from "@/types/stock";
+import prisma from "@/lib/prisma";
+
+
+
 
 export async function fetchStockData(
   symbol: string,
@@ -40,7 +44,7 @@ export async function fetchStockData(
   return {
     name: meta.longName,
     symbol: meta.symbol,
-    exchange: meta.exchangeName, 
+    exchange: meta.exchangeName,
     data: timestamps
       .map((time: number, index: number) => ({
         timestamp: time,
@@ -74,36 +78,63 @@ export async function searchStocks(query: string): Promise<StockListing[]> {
   }));
 }
 
-export async function addStock(userId: string, stock: Stock) {
-  await prisma.stock.create({
-    data: {
-      userId,
-      symbol: stock.symbol,
-      name: stock.name,
-      quantity: stock.quantity,
-      price: stock.price,
-    },
-  });
+export async function addStock(userId: string, stock: Omit<Stock, 'id' | 'createdAt' | 'updatedAt'>) {
+  console.log("addStock function called with:", { userId, stock });
+  try {
+    const result = await prisma.stock.create({
+      data: {
+        userId,
+        symbol: stock.symbol,
+        name: stock.name,
+        quantity: stock.quantity,
+        avgPrice: stock.avgPrice,
+      },
+    });
+    console.log("Stock added successfully:", result);
+    return result;
+  } catch (error) {
+    console.error("Error adding stock:", error);
+    if (error instanceof Error) {
+      throw new Error(`Failed to add stock: ${error.message}`);
+    } else {
+      throw new Error("Failed to add stock: Unknown error");
+    }
+  }
 }
 
 export async function getStocks(userId: string): Promise<Stock[]> {
-  return prisma.stock.findMany({
-    where: { userId },
-  });
+  try {
+    return await prisma.stock.findMany({
+      where: { userId },
+    });
+  } catch (error) {
+    console.error("Error getting stocks:", error);
+    throw new Error("Failed to get stocks");
+  }
 }
 
 export async function updateStock(userId: string, stock: Stock) {
-  await prisma.stock.update({
-    where: { userId_symbol: { userId, symbol: stock.symbol } },
-    data: {
-      quantity: stock.quantity,
-      price: stock.price,
-    },
-  });
+  try {
+    await prisma.stock.update({
+      where: { userId_symbol: { userId, symbol: stock.symbol } },
+      data: {
+        quantity: stock.quantity,
+        avgPrice: stock.avgPrice,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating stock:", error);
+    throw new Error("Failed to update stock");
+  }
 }
 
 export async function deleteStock(userId: string, symbol: string) {
-  await prisma.stock.delete({
-    where: { userId_symbol: { userId, symbol } },
-  });
+  try {
+    await prisma.stock.delete({
+      where: { userId_symbol: { userId, symbol } },
+    });
+  } catch (error) {
+    console.error("Error deleting stock:", error);
+    throw new Error("Failed to delete stock");
+  }
 }

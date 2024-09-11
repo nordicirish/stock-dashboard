@@ -16,7 +16,7 @@ const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82CA9D"
 export function StockPieChart({ stocks, onAddStock, onUpdateStock, onDeleteStock }: StockPieChartProps) {
   const pieData = stocks.map((stock) => ({
     name: stock.name,
-    value: stock.quantity * stock.price,
+    value: stock.quantity * stock.avgPrice,
   }));
 
   if (stocks.length === 0) {
@@ -48,7 +48,9 @@ export function StockPieChart({ stocks, onAddStock, onUpdateStock, onDeleteStock
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                label={({ name, percent }) =>
+                  `${name} ${(percent * 100).toFixed(0)}%`
+                }
               >
                 {pieData.map((entry, index) => (
                   <Cell
@@ -57,18 +59,34 @@ export function StockPieChart({ stocks, onAddStock, onUpdateStock, onDeleteStock
                   />
                 ))}
               </Pie>
-              <Tooltip formatter={(value) => typeof value === 'number' ? `$${value.toFixed(2)}` : value} />
+              <Tooltip
+                formatter={(value) =>
+                  typeof value === "number" ? `$${value.toFixed(2)}` : value
+                }
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>
         <div className="mt-4">
           <h3 className="text-lg font-semibold">Your Stocks</h3>
           {stocks.map((stock) => (
-            <div key={stock.symbol} className="flex justify-between items-center mt-2">
-              <span>{stock.name} ({stock.quantity} @ ${stock.price})</span>
+            <div
+              key={stock.symbol}
+              className="flex justify-between items-center mt-2"
+            >
+              <span>
+                {stock.name} ({stock.quantity} @ ${stock.avgPrice})
+              </span>
               <div>
-                <Button onClick={() => onUpdateStock(stock)} className="mr-2">Update</Button>
-                <Button onClick={() => onDeleteStock(stock.symbol)} variant="destructive">Delete</Button>
+                <Button onClick={() => onUpdateStock(stock)} className="mr-2">
+                  Update
+                </Button>
+                <Button
+                  onClick={() => onDeleteStock(stock.symbol)}
+                  variant="destructive"
+                >
+                  Delete
+                </Button>
               </div>
             </div>
           ))}

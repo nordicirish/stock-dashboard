@@ -16,10 +16,14 @@ export interface StockData {
 }
 
 export interface Stock {
+  id?: number;
+  userId: string;
   symbol: string;
   name: string;
   quantity: number;
-  price: number;
+  avgPrice: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface YahooQuote {

@@ -8,12 +8,14 @@ datasource db {
 }
 
 model Stock {
-  id       Int    @id @default(autoincrement())
-  userId   String
-  symbol   String
-  name     String
-  quantity Int
-  price    Float
+  id         Int      @id @default(autoincrement())
+  userId     String
+  symbol     String
+  name       String
+  quantity   Float
+  avgPrice   Float
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@unique([userId, symbol])
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { StockListing } from "@/types/stock";
 import { searchStocks } from "@/app/actions";
 import { Button } from "@/components/ui/button";
@@ -12,16 +12,31 @@ import {
 import { ChevronsUpDown } from "lucide-react";
 
 interface StockSearchProps {
-  onStockSelect: (stock: StockListing) => void;
+  onStockSelect: (stock: StockListing | null) => void;
   placeholder?: string;
+  selectedStock: StockListing | null;
 }
 
-export function StockSearch({ onStockSelect, placeholder = "Search stocks..." }: StockSearchProps) {
+export function StockSearch({ onStockSelect, placeholder = "Search stocks...", selectedStock }: StockSearchProps) {
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [stocks, setStocks] = useState<StockListing[]>([]);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
+  // Update searchValue when selectedStock changes
+  useEffect(() => {
+    if (selectedStock) {
+      setSearchValue(`${selectedStock.symbol} - ${selectedStock.name}`);
+    } else {
+      setSearchValue("");
+    }
+  }, [selectedStock]);
+
+  const handleStockSelect = (stock: StockListing) => {
+    console.log("Stock selected:", stock);
+    onStockSelect(stock);
+    setOpen(false);
+  };
 
   // useCallback saves this function in memo, preventing unnecessary re-renders
   // It's used here to optimize performance, especially as this component is a child of other components
@@ -74,8 +89,7 @@ export function StockSearch({ onStockSelect, placeholder = "Search stocks..." }:
                   key={stock.symbol}
                   className="cursor-pointer p-2 hover:bg-gray-100"
                   onClick={() => {
-                    onStockSelect(stock);
-                    setSearchValue(`${stock.symbol} - ${stock.name}`);
+                    handleStockSelect(stock);
                     setOpen(false);
                   }}
                 >
