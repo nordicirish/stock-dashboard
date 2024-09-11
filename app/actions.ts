@@ -1,6 +1,7 @@
 "use server";
 
-import { StockData, StockListing, YahooQuote } from "@/types/stock";
+import { prisma } from '@/lib/prisma';
+import { StockData, StockListing, YahooQuote, Stock } from "@/types/stock";
 
 export async function fetchStockData(
   symbol: string,
@@ -70,4 +71,38 @@ export async function searchStocks(query: string): Promise<StockListing[]> {
     name: quote.shortname || quote.longname || quote.symbol,
     exchange: quote.exchange,
   }));
+}
+
+export async function addStock(userId: string, stock: Stock) {
+  await prisma.stock.create({
+    data: {
+      userId,
+      symbol: stock.symbol,
+      name: stock.name,
+      quantity: stock.quantity,
+      price: stock.price,
+    },
+  });
+}
+
+export async function getStocks(userId: string): Promise<Stock[]> {
+  return prisma.stock.findMany({
+    where: { userId },
+  });
+}
+
+export async function updateStock(userId: string, stock: Stock) {
+  await prisma.stock.update({
+    where: { userId_symbol: { userId, symbol: stock.symbol } },
+    data: {
+      quantity: stock.quantity,
+      price: stock.price,
+    },
+  });
+}
+
+export async function deleteStock(userId: string, symbol: string) {
+  await prisma.stock.delete({
+    where: { userId_symbol: { userId, symbol } },
+  });
 }
