@@ -5,11 +5,14 @@ export interface StockListing {
 }
 
 export interface StockData {
+  symbol: string;
   name: string;
+  exchange: string;
   data: Array<{
-    time: string;
+    timestamp: number;
     price: number;
   }>;
+  timezone: string;
 }
 
 export interface Stock {
@@ -17,16 +20,6 @@ export interface Stock {
   name: string;
   quantity: number;
   price: number;
-}
-
-export interface StockData {
-  symbol: string;
-  name: string;
-  exchange: string;
-  data: Array<{
-    time: string;
-    price: number;
-  }>;
 }
 
 export interface YahooQuote {

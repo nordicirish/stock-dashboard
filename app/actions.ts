@@ -38,15 +38,16 @@ export async function fetchStockData(
   const meta = data.chart.result[0].meta;
 
   return {
+    name: meta.longName,
     symbol: meta.symbol,
-    name: meta.shortName || meta.symbol,
-    exchange: meta.exchangeName,
+    exchange: meta.exchangeName, 
     data: timestamps
       .map((time: number, index: number) => ({
-        time: new Date(time * 1000).toISOString(),
+        timestamp: time,
         price: prices[index] || null,
       }))
       .filter((item: { price: number | null }) => item.price !== null),
+    timezone: meta.timezone,
   };
 }
 

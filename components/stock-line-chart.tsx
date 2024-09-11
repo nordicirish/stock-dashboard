@@ -159,16 +159,8 @@ export default function StockLineChart() {
           <ResponsiveContainer width="100%" height={400}>
             <LineChart data={stockData.data}>
               <XAxis
-                dataKey="time"
-                tickFormatter={(time) => {
-                  const date = new Date(time);
-                  return selectedTimeframe === "1D"
-                    ? date.toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : date.toLocaleDateString();
-                }}
+                dataKey="timestamp"
+                tickFormatter={(timestamp) => formatDateForTooltip(timestamp, selectedTimeframe, stockData.timezone)}
               />
               <YAxis
                 domain={["auto", "auto"]}
@@ -183,7 +175,7 @@ export default function StockLineChart() {
                   borderRadius: "0.5rem",
                   padding: "0.5rem",
                 }}
-                labelFormatter={(label) => formatDateForTooltip(new Date(label), selectedTimeframe)}
+                labelFormatter={(label) => formatDateForTooltip(label, selectedTimeframe, stockData.timezone)}
                 formatter={(value) => [`$${Number(value).toFixed(2)}`, "Price"]}
               />
               <Line
