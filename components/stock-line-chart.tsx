@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/popover";
 import { ChevronsUpDown } from "lucide-react";
 import { StockListing, StockData } from "@/types/stock";
+import { formatDateForTooltip } from "@/lib/utils";
 
 // Add these type definitions at the top of the file
 
@@ -174,7 +175,15 @@ export default function StockLineChart() {
                 tickFormatter={(value) => `$${value.toFixed(2)}`}
               />
               <Tooltip
-                labelFormatter={(label) => new Date(label).toLocaleString()}
+                contentStyle={{
+                  backgroundColor: "white",
+                  color: "black",
+                  textAlign: "center",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "0.5rem",
+                  padding: "0.5rem",
+                }}
+                labelFormatter={(label) => formatDateForTooltip(new Date(label), selectedTimeframe)}
                 formatter={(value) => [`$${Number(value).toFixed(2)}`, "Price"]}
               />
               <Line
