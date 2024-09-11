@@ -13,10 +13,12 @@ export interface StockData {
 }
 
 export interface Stock {
+  symbol: string;
   name: string;
   quantity: number;
   price: number;
 }
+
 export interface StockData {
   symbol: string;
   name: string;

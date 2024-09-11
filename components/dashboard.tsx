@@ -6,27 +6,38 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StockChart from "./stock-line-chart";
 import { StockPieChart } from "./stock-pie-chart";
+import { Stock } from "@/types/stock";
+import { v4 as uuidv4 } from 'uuid';
 
-
+// Add this type definition if it's not already defined elsewhere
+type StockWithId = Stock & { id: string };
 
 export function Dashboard() {
-  const [messages, setMessages] = useState([
-    { text: "Hello! How can I assist you today?", sender: "ai" },
-  ]);
+  const [stocks, setStocks] = useState<StockWithId[]>([]);
+  const [messages, setMessages] = useState<{ sender: string; text: string }[]>(
+    []
+  );
   const [input, setInput] = useState("");
+
+  const handleAddStock = (newStock: Stock) => {
+    const stockWithId: StockWithId = { ...newStock, id: uuidv4() };
+    setStocks([...stocks, stockWithId]);
+  };
+
   const handleSend = () => {
     if (input.trim()) {
-      setMessages([...messages, { text: input, sender: "user" }]);
+      setMessages([...messages, { sender: "user", text: input.trim() }]);
       setInput("");
-      // Here you would typically call an API to get the AI response
-      // For now, we'll just simulate an AI response
-      setTimeout(() => {
-        setMessages((prev) => [
-          ...prev,
-          { text: "AI response placeholder", sender: "ai" },
-        ]);
-      }, 1000);
+      // TODO: Add AI response logic here
     }
+  };
+
+  const handleUpdateStock = (updatedStock: StockWithId) => {
+    setStocks(stocks.map(stock => stock.id === updatedStock.id ? updatedStock : stock));
+  };
+
+  const handleDeleteStock = (stockId: string) => {
+    setStocks(stocks.filter(stock => stock.id !== stockId));
   };
 
   return (
@@ -37,7 +48,14 @@ export function Dashboard() {
       <main className="flex-1 p-4 lg:p-6 space-y-4">
         <div className="grid gap-4 md:grid-cols-2">
           <StockChart />
-          <StockPieChart />
+          <StockPieChart 
+            stocks={stocks} 
+            onAddStock={handleAddStock}
+            onUpdateStock={(stock: Stock) => {
+              if ('id' in stock) handleUpdateStock(stock as StockWithId);
+            }}
+            onDeleteStock={handleDeleteStock}
+          />
         </div>
         <Card>
           <CardHeader>
