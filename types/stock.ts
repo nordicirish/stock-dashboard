@@ -1,7 +1,6 @@
 export interface StockListing {
   symbol: string;
   name: string;
-  exchange: string;
 }
 
 export interface StockData {
@@ -22,7 +21,6 @@ export interface Stock {
   name: string;
   quantity: number;
   avgPrice: number;
-  exchange?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

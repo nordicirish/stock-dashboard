@@ -1,17 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Stock } from "@/types/stock";
-import { StockWithId } from "@/components/dashboard"; // Add this import
-import { AddStockForm } from "./add-stock-form";
+import { StockForm } from "./stock-form";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect } from "react";
+import { addStock, updateStock } from "@/app/actions"; // Add this import
 
 interface StockPieChartProps {
-  stocks: StockWithId[]; // Change this to StockWithId
+  stocks: Stock[];
   onAddStock: (stock: Omit<Stock, "id">) => void;
-  onUpdateStock: (stock: StockWithId) => void; // Change this to StockWithId
-  onDeleteStock: (stockId: string) => void; // Change this to accept only string
+  onUpdateStock: (stock: Stock) => void;
+  onDeleteStock: (stockId: number) => void;
 }
 
 const COLORS = [
@@ -29,23 +28,53 @@ export function StockPieChart({
   onUpdateStock,
   onDeleteStock,
 }: StockPieChartProps) {
-  const [editingStock, setEditingStock] = useState<StockWithId | null>(null);
+  const [editingStock, setEditingStock] = useState<Stock | null>(null);
+  const [pieData, setPieData] = useState<
+    Array<{ symbol: string; name: string; value: number }>
+  >([]);
 
-  const handleUpdateClick = (stock: StockWithId) => {
+  useEffect(() => {
+    const newPieData = stocks.map((stock) => ({
+      symbol: stock.symbol,
+      name: stock.name,
+      value: stock.quantity * stock.avgPrice,
+    }));
+    setPieData(newPieData);
+  }, [stocks]);
+
+  const handleUpdateClick = (stock: Stock) => {
     setEditingStock(stock);
   };
 
-  const handleUpdateSubmit = (updatedStock: StockWithId) => {
-    onUpdateStock(updatedStock);
-    setEditingStock(null);
+  const handleAddStock = async (newStock: Omit<Stock, "id">) => {
+    try {
+      const addedStock = await addStock("testuser123", newStock);
+      // Check if the stock already exists in the local state
+      const existingIndex = stocks.findIndex(s => s.symbol === addedStock.symbol);
+      if (existingIndex !== -1) {
+        // If it exists, update it
+        const updatedStocks = [...stocks];
+        updatedStocks[existingIndex] = addedStock;
+        onUpdateStock(addedStock);
+      } else {
+        // If it's new, add it
+        onAddStock(addedStock);
+      }
+    } catch (error) {
+      console.error("Error adding stock:", error);
+    }
   };
 
-  const pieData = stocks.map((stock) => ({
-    symbol: stock.symbol,
-    name: stock.name,
-    value: stock.quantity * stock.avgPrice,
-  }));
-  console.log(pieData);
+  const handleUpdateStock = async (updatedStock: Omit<Stock, "id" | "createdAt" | "updatedAt">) => {
+    try {
+      const updated = await updateStock("testuser123", updatedStock);
+      onUpdateStock(updated);
+      setEditingStock(null);
+    } catch (error) {
+      console.error("Error updating stock:", error);
+    }
+  };
+
   if (stocks.length === 0) {
     return (
       <Card>
@@ -53,7 +82,7 @@ export function StockPieChart({
           <CardTitle>Add Your First Stock</CardTitle>
         </CardHeader>
         <CardContent>
-          <AddStockForm onAddStock={onAddStock} />
+          <StockForm onSubmit={handleAddStock} />
         </CardContent>
       </Card>
     );
@@ -98,13 +127,13 @@ export function StockPieChart({
           <h3 className="text-lg font-semibold">Your Stocks</h3>
           {stocks.map((stock) => (
             <div
-              key={stock.symbol}
+              key={stock.id}
               className="flex justify-between items-center mt-2"
             >
-              {editingStock && editingStock.symbol === stock.symbol ? (
-                <UpdateStockForm
-                  stock={editingStock}
-                  onSubmit={handleUpdateSubmit}
+              {editingStock && editingStock.id === stock.id ? (
+                <StockForm
+                  existingStock={editingStock}
+                  onSubmit={handleUpdateStock}
                   onCancel={() => setEditingStock(null)}
                 />
               ) : (
@@ -120,7 +149,7 @@ export function StockPieChart({
                       Update
                     </Button>
                     <Button
-                      onClick={() => onDeleteStock(stock.id ?? "")}
+                      onClick={() => onDeleteStock(stock.id!)}
                       variant="destructive"
                     >
                       Delete
@@ -133,59 +162,10 @@ export function StockPieChart({
         </div>
         {!editingStock && (
           <div className="mt-4">
-            <AddStockForm onAddStock={onAddStock} />
+            <StockForm onSubmit={handleAddStock} />
           </div>
         )}
       </CardContent>
     </Card>
-  );
-}
-
-interface UpdateStockFormProps {
-  stock: StockWithId;
-  onSubmit: (updatedStock: StockWithId) => void;
-  onCancel: () => void;
-}
-
-function UpdateStockForm({ stock, onSubmit, onCancel }: UpdateStockFormProps) {
-  const [quantity, setQuantity] = useState(stock.quantity.toString());
-  const [avgPrice, setAvgPrice] = useState(stock.avgPrice.toString());
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit({
-      ...stock,
-      quantity: parseFloat(quantity),
-      avgPrice: parseFloat(avgPrice),
-    });
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-2 w-full">
-      <div className="font-semibold">
-        {stock.name} ({stock.symbol})
-      </div>
-      <Input type="text" value={stock.name} readOnly className="bg-gray-100" />
-      <Input
-        type="number"
-        value={quantity}
-        onChange={(e) => setQuantity(e.target.value)}
-        placeholder="Quantity"
-        required
-      />
-      <Input
-        type="number"
-        value={avgPrice}
-        onChange={(e) => setAvgPrice(e.target.value)}
-        placeholder="Average Price"
-        required
-      />
-      <div className="space-x-2">
-        <Button type="submit">Save</Button>
-        <Button type="button" onClick={onCancel} variant="outline">
-          Cancel
-        </Button>
-      </div>
-    </form>
   );
 }

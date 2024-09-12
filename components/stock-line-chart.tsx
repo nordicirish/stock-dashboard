@@ -106,7 +106,7 @@ export default function StockLineChart() {
             <PopoverContent className="w-full p-0">
               <div className="p-2">
                 <input
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 border rounded text-foreground bg-background"
                   placeholder="Search stocks..."
                   value={searchValue}
                   onChange={(e) => handleSearch(e.target.value)}
@@ -118,18 +118,18 @@ export default function StockLineChart() {
                     {stocks.map((stock) => (
                       <li
                         key={stock.symbol}
-                        className="cursor-pointer p-2 hover:bg-gray-100"
+                        className="cursor-pointer p-2 hover:bg-accent text-foreground"
                         onClick={() => {
                           setSelectedStock(stock);
                           setOpen(false);
                         }}
                       >
-                        {stock.symbol} - {stock.name} ({stock.exchange})
+                        {stock.symbol} - {stock.name}
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="p-2 text-center text-gray-500">
+                  <p className="p-2 text-center text-muted-foreground">
                     {searchValue
                       ? "No stocks found."
                       : "Start typing to search stocks."}

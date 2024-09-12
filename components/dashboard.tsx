@@ -1,84 +1,71 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StockChart from "./stock-line-chart";
 import { StockPieChart } from "./stock-pie-chart";
 import { Stock } from "@/types/stock";
-import { v4 as uuidv4 } from "uuid";
 import { getStocks, updateStock, deleteStock, addStock } from "@/app/actions";
 
-// Update the StockWithId type
-export type StockWithId = Omit<Stock, 'id'> & { id: string };
+// Remove this type as it's no longer needed
+// export type StockWithId = Omit<Stock, 'id'> & { id: string };
 
 export function Dashboard() {
-  const [stocks, setStocks] = useState<StockWithId[]>([]);
+  const [stocks, setStocks] = useState<Stock[]>([]);
   const [messages, setMessages] = useState<{ sender: string; text: string }[]>(
     []
   );
   const [input, setInput] = useState("");
   const userId = "testuser123"; // Replace with actual user ID logic
 
-  useEffect(() => {
-    fetchStocks();
-  }, []);
-
-  const fetchStocks = async () => {
+  const fetchStocks = useCallback(async () => {
     try {
       const fetchedStocks = await getStocks(userId);
-      setStocks(
-        fetchedStocks.map((stock) => ({
-          ...stock,
-          id: stock.id ? stock.id.toString() : uuidv4(),
-        }))
-      );
+      setStocks(fetchedStocks);
     } catch (error) {
       console.error("Error fetching stocks:", error);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    fetchStocks();
+  }, [fetchStocks]);
 
   const handleAddStock = async (newStock: Omit<Stock, "id">) => {
     try {
       const addedStock = await addStock(userId, newStock);
-      const stockWithId: StockWithId = {
-        ...addedStock,
-        id: addedStock.id ? addedStock.id.toString() : uuidv4(),
-      };
-      setStocks((prevStocks) => [...prevStocks, stockWithId]);
+      setStocks((prevStocks) => [...prevStocks, addedStock]);
+      await fetchStocks(); // Refetch all stocks to ensure consistency
     } catch (error) {
       console.error("Error adding stock:", error);
     }
   };
 
-  const handleUpdateStock = async (updatedStock: StockWithId) => {
+  const handleUpdateStock = async (updatedStock: Stock) => {
     try {
-      const { id, ...stockWithoutId } = updatedStock;
-      const updatedStockFromServer = await updateStock(userId, stockWithoutId);
+      const updatedStockFromServer = await updateStock(userId, updatedStock);
       setStocks((prevStocks) =>
         prevStocks.map((stock) =>
-          stock.id === id
-            ? { ...updatedStockFromServer, id }
-            : stock
+          stock.id === updatedStockFromServer.id ? updatedStockFromServer : stock
         )
       );
+      await fetchStocks(); // Refetch all stocks to ensure consistency
     } catch (error) {
       console.error("Error updating stock:", error);
     }
   };
 
-  const handleDeleteStock = async (stockId: string) => {
-    const stockToDelete = stocks.find((stock) => stock.id === stockId);
-    if (stockToDelete) {
-      try {
-        await deleteStock(userId, stockToDelete.symbol);
-        setStocks((prevStocks) =>
-          prevStocks.filter((stock) => stock.id !== stockId)
-        );
-      } catch (error) {
-        console.error("Error deleting stock:", error);
-      }
+  const handleDeleteStock = async (stockId: number) => {
+    try {
+      await deleteStock(userId, stockId);
+      setStocks((prevStocks) =>
+        prevStocks.filter((stock) => stock.id !== stockId)
+      );
+      await fetchStocks(); // Refetch all stocks to ensure consistency
+    } catch (error) {
+      console.error("Error deleting stock:", error);
     }
   };
 
@@ -99,6 +86,7 @@ export function Dashboard() {
         <div className="grid gap-4 md:grid-cols-2">
           <StockChart />
           <StockPieChart
+            key={stocks.length} // Add this line
             stocks={stocks}
             onAddStock={handleAddStock}
             onUpdateStock={handleUpdateStock}

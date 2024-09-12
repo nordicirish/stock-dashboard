@@ -93,7 +93,7 @@ export function StockSearch({ onStockSelect, placeholder = "Search stocks...", s
                     setOpen(false);
                   }}
                 >
-                  {stock.symbol} - {stock.name} ({stock.exchange})
+                  {stock.symbol} - {stock.name}
                 </li>
               ))}
             </ul>
