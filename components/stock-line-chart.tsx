@@ -10,7 +10,7 @@ import {
   YAxis,
 } from "recharts";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -27,6 +27,8 @@ import {
 import { ChevronsUpDown } from "lucide-react";
 import { StockListing, StockData } from "@/types/stock";
 import { formatDateForTooltip } from "@/lib/utils";
+import { formatTimeForXAxis } from "@/lib/utils"; // Add this import
+import { formatDateLabel } from "@/lib/utils"; // Add this import
 
 // Add these type definitions at the top of the file
 
@@ -59,8 +61,13 @@ export default function StockLineChart() {
   useEffect(() => {
     updateStockData();
     const intervalId = setInterval(updateStockData, 60000); // Refresh every minute
+    
+    // Reset the prevDate and labelCount when timeframe changes
+    formatTimeForXAxis.prevDate = '';
+    formatTimeForXAxis.labelCount = 0;
+    
     return () => clearInterval(intervalId);
-  }, [updateStockData]);
+  }, [updateStockData, selectedTimeframe]); // Add selectedTimeframe to the dependency array
 
   const handleSearch = useCallback((value: string) => {
     setSearchValue(value);
@@ -81,9 +88,6 @@ export default function StockLineChart() {
   return (
     <Card className="w-full max-w-3xl mx-auto">
       <CardHeader>
-        <CardTitle>
-          {stockData?.name || selectedStock?.name || "Select a stock"}
-        </CardTitle>
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
@@ -149,6 +153,11 @@ export default function StockLineChart() {
             </SelectContent>
           </Select>
         </div>
+        {selectedTimeframe === "1D" && stockData && (
+          <div className="text-sm text-gray-500 text-center mt-2">
+            {formatDateLabel(stockData.data[0].timestamp, stockData.timezone)}
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         {isPending ? (
@@ -160,7 +169,7 @@ export default function StockLineChart() {
             <LineChart data={stockData.data}>
               <XAxis
                 dataKey="timestamp"
-                tickFormatter={(timestamp) => formatDateForTooltip(timestamp, selectedTimeframe, stockData.timezone)}
+                tickFormatter={(timestamp) => formatTimeForXAxis(timestamp, selectedTimeframe, stockData.timezone)}
               />
               <YAxis
                 domain={["auto", "auto"]}

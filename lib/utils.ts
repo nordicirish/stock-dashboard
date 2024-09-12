@@ -55,3 +55,54 @@ export function formatDateForTooltip(
     return new Intl.DateTimeFormat("en-US", options).format(date);
   }
 }
+
+export function formatTimeForXAxis(timestamp: number, timeframe: string, timezone: string): string {
+  const date = new Date(timestamp * 1000); // Convert timestamp to milliseconds
+  const options: Intl.DateTimeFormatOptions = { 
+    timeZone: timezoneMap[timezone] || 'UTC'
+  };
+
+  if (timeframe === '1D') {
+    options.hour = '2-digit';
+    options.minute = '2-digit';
+    options.hour12 = false;
+    return new Intl.DateTimeFormat('en-US', options).format(date);
+  } else if (timeframe === '5D') {
+    options.month = 'short';
+    options.day = 'numeric';
+    const formattedDate = new Intl.DateTimeFormat('en-US', options).format(date);
+    
+    // Check if this is a new date
+    if (formatTimeForXAxis.prevDate !== formattedDate) {
+      formatTimeForXAxis.prevDate = formattedDate;
+      formatTimeForXAxis.labelCount = 0;
+    }
+    
+    // Increment label count
+    formatTimeForXAxis.labelCount++;
+    
+    // Only show label for first occurrence of each date
+    return formatTimeForXAxis.labelCount === 1 ? formattedDate : '';
+  } else {
+    options.month = 'short';
+    options.day = 'numeric';
+    return new Intl.DateTimeFormat('en-US', options).format(date);
+  }
+}
+
+// Add these properties to the function
+formatTimeForXAxis.prevDate = '';
+formatTimeForXAxis.labelCount = 0;
+
+export function formatDateLabel(timestamp: number, timezone: string): string {
+  const date = new Date(timestamp * 1000); // Convert timestamp to milliseconds
+  const options: Intl.DateTimeFormatOptions = {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: timezoneMap[timezone] || 'UTC'
+  };
+
+  return new Intl.DateTimeFormat('en-US', options).format(date);
+}
