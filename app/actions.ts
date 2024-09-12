@@ -3,6 +3,7 @@
 
 import { StockData, StockListing, YahooQuote, Stock } from "@/types/stock";
 import prisma from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 
 
@@ -113,17 +114,26 @@ export async function getStocks(userId: string): Promise<Stock[]> {
   }
 }
 
-export async function updateStock(userId: string, stock: Stock) {
+export async function updateStock(userId: string, stock: Stock): Promise<Stock> {
+  console.log("updateStock function called with:", { userId, stock });
   try {
-    await prisma.stock.update({
+    const updatedStock = await prisma.stock.update({
       where: { userId_symbol: { userId, symbol: stock.symbol } },
       data: {
         quantity: stock.quantity,
         avgPrice: stock.avgPrice,
+        name: stock.name,
       },
     });
+    console.log("Stock updated successfully:", updatedStock);
+    return updatedStock;
   } catch (error) {
     console.error("Error updating stock:", error);
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2025') {
+        throw new Error("Stock not found for the given user and symbol");
+      }
+    }
     throw new Error("Failed to update stock");
   }
 }

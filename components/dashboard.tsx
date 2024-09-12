@@ -1,16 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StockChart from "./stock-line-chart";
 import { StockPieChart } from "./stock-pie-chart";
 import { Stock } from "@/types/stock";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
+import { getStocks, updateStock, deleteStock, addStock } from "@/app/actions";
 
-// Add this type definition if it's not already defined elsewhere
-type StockWithId = Stock & { id: string };
+// Update the StockWithId type
+export type StockWithId = Omit<Stock, 'id'> & { id: string };
 
 export function Dashboard() {
   const [stocks, setStocks] = useState<StockWithId[]>([]);
@@ -18,10 +19,67 @@ export function Dashboard() {
     []
   );
   const [input, setInput] = useState("");
+  const userId = "testuser123"; // Replace with actual user ID logic
 
-  const handleAddStock = (newStock: Stock) => {
-    const stockWithId: StockWithId = { ...newStock, id: uuidv4() };
-    setStocks([...stocks, stockWithId]);
+  useEffect(() => {
+    fetchStocks();
+  }, []);
+
+  const fetchStocks = async () => {
+    try {
+      const fetchedStocks = await getStocks(userId);
+      setStocks(
+        fetchedStocks.map((stock) => ({
+          ...stock,
+          id: stock.id ? stock.id.toString() : uuidv4(),
+        }))
+      );
+    } catch (error) {
+      console.error("Error fetching stocks:", error);
+    }
+  };
+
+  const handleAddStock = async (newStock: Omit<Stock, "id">) => {
+    try {
+      const addedStock = await addStock(userId, newStock);
+      const stockWithId: StockWithId = {
+        ...addedStock,
+        id: addedStock.id ? addedStock.id.toString() : uuidv4(),
+      };
+      setStocks((prevStocks) => [...prevStocks, stockWithId]);
+    } catch (error) {
+      console.error("Error adding stock:", error);
+    }
+  };
+
+  const handleUpdateStock = async (updatedStock: StockWithId) => {
+    try {
+      const { id, ...stockWithoutId } = updatedStock;
+      const updatedStockFromServer = await updateStock(userId, stockWithoutId);
+      setStocks((prevStocks) =>
+        prevStocks.map((stock) =>
+          stock.id === id
+            ? { ...updatedStockFromServer, id }
+            : stock
+        )
+      );
+    } catch (error) {
+      console.error("Error updating stock:", error);
+    }
+  };
+
+  const handleDeleteStock = async (stockId: string) => {
+    const stockToDelete = stocks.find((stock) => stock.id === stockId);
+    if (stockToDelete) {
+      try {
+        await deleteStock(userId, stockToDelete.symbol);
+        setStocks((prevStocks) =>
+          prevStocks.filter((stock) => stock.id !== stockId)
+        );
+      } catch (error) {
+        console.error("Error deleting stock:", error);
+      }
+    }
   };
 
   const handleSend = () => {
@@ -32,14 +90,6 @@ export function Dashboard() {
     }
   };
 
-  const handleUpdateStock = (updatedStock: StockWithId) => {
-    setStocks(stocks.map(stock => stock.id === updatedStock.id ? updatedStock : stock));
-  };
-
-  const handleDeleteStock = (stockId: string) => {
-    setStocks(stocks.filter(stock => stock.id !== stockId));
-  };
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <header className="px-4 lg:px-6 h-14 flex items-center">
@@ -48,15 +98,14 @@ export function Dashboard() {
       <main className="flex-1 p-4 lg:p-6 space-y-4">
         <div className="grid gap-4 md:grid-cols-2">
           <StockChart />
-          <StockPieChart 
-            stocks={stocks} 
+          <StockPieChart
+            stocks={stocks}
             onAddStock={handleAddStock}
-            onUpdateStock={(stock: Stock) => {
-              if ('id' in stock) handleUpdateStock(stock as StockWithId);
-            }}
+            onUpdateStock={handleUpdateStock}
             onDeleteStock={handleDeleteStock}
           />
         </div>
+
         <Card>
           <CardHeader>
             <CardTitle>Chat with AI</CardTitle>

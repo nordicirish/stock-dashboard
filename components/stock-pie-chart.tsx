@@ -1,24 +1,51 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Stock } from "@/types/stock";
+import { StockWithId } from "@/components/dashboard"; // Add this import
 import { AddStockForm } from "./add-stock-form";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
 
 interface StockPieChartProps {
-  stocks: Stock[];
-  onAddStock: (stock: Stock) => void;
-  onUpdateStock: (stock: Stock) => void;
-  onDeleteStock: (symbol: string) => void;
+  stocks: StockWithId[]; // Change this to StockWithId
+  onAddStock: (stock: Omit<Stock, "id">) => void;
+  onUpdateStock: (stock: StockWithId) => void; // Change this to StockWithId
+  onDeleteStock: (stockId: string) => void; // Change this to accept only string
 }
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82CA9D"];
+const COLORS = [
+  "#0088FE",
+  "#00C49F",
+  "#FFBB28",
+  "#FF8042",
+  "#8884D8",
+  "#82CA9D",
+];
 
-export function StockPieChart({ stocks, onAddStock, onUpdateStock, onDeleteStock }: StockPieChartProps) {
+export function StockPieChart({
+  stocks,
+  onAddStock,
+  onUpdateStock,
+  onDeleteStock,
+}: StockPieChartProps) {
+  const [editingStock, setEditingStock] = useState<StockWithId | null>(null);
+
+  const handleUpdateClick = (stock: StockWithId) => {
+    setEditingStock(stock);
+  };
+
+  const handleUpdateSubmit = (updatedStock: StockWithId) => {
+    onUpdateStock(updatedStock);
+    setEditingStock(null);
+  };
+
   const pieData = stocks.map((stock) => ({
+    symbol: stock.symbol,
     name: stock.name,
     value: stock.quantity * stock.avgPrice,
   }));
-
+  console.log(pieData);
   if (stocks.length === 0) {
     return (
       <Card>
@@ -48,8 +75,8 @@ export function StockPieChart({ stocks, onAddStock, onUpdateStock, onDeleteStock
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
-                label={({ name, percent }) =>
-                  `${name} ${(percent * 100).toFixed(0)}%`
+                label={({ symbol, percent }) =>
+                  `${symbol} ${(percent * 100).toFixed(0)}%`
                 }
               >
                 {pieData.map((entry, index) => (
@@ -74,27 +101,91 @@ export function StockPieChart({ stocks, onAddStock, onUpdateStock, onDeleteStock
               key={stock.symbol}
               className="flex justify-between items-center mt-2"
             >
-              <span>
-                {stock.name} ({stock.quantity} @ ${stock.avgPrice})
-              </span>
-              <div>
-                <Button onClick={() => onUpdateStock(stock)} className="mr-2">
-                  Update
-                </Button>
-                <Button
-                  onClick={() => onDeleteStock(stock.symbol)}
-                  variant="destructive"
-                >
-                  Delete
-                </Button>
-              </div>
+              {editingStock && editingStock.symbol === stock.symbol ? (
+                <UpdateStockForm
+                  stock={editingStock}
+                  onSubmit={handleUpdateSubmit}
+                  onCancel={() => setEditingStock(null)}
+                />
+              ) : (
+                <>
+                  <span>
+                    {stock.name} ({stock.quantity} @ ${stock.avgPrice})
+                  </span>
+                  <div>
+                    <Button
+                      onClick={() => handleUpdateClick(stock)}
+                      className="mr-2"
+                    >
+                      Update
+                    </Button>
+                    <Button
+                      onClick={() => onDeleteStock(stock.id ?? "")}
+                      variant="destructive"
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </>
+              )}
             </div>
           ))}
         </div>
-        <div className="mt-4">
-          <AddStockForm onAddStock={onAddStock} />
-        </div>
+        {!editingStock && (
+          <div className="mt-4">
+            <AddStockForm onAddStock={onAddStock} />
+          </div>
+        )}
       </CardContent>
     </Card>
+  );
+}
+
+interface UpdateStockFormProps {
+  stock: StockWithId;
+  onSubmit: (updatedStock: StockWithId) => void;
+  onCancel: () => void;
+}
+
+function UpdateStockForm({ stock, onSubmit, onCancel }: UpdateStockFormProps) {
+  const [quantity, setQuantity] = useState(stock.quantity.toString());
+  const [avgPrice, setAvgPrice] = useState(stock.avgPrice.toString());
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      ...stock,
+      quantity: parseFloat(quantity),
+      avgPrice: parseFloat(avgPrice),
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-2 w-full">
+      <div className="font-semibold">
+        {stock.name} ({stock.symbol})
+      </div>
+      <Input type="text" value={stock.name} readOnly className="bg-gray-100" />
+      <Input
+        type="number"
+        value={quantity}
+        onChange={(e) => setQuantity(e.target.value)}
+        placeholder="Quantity"
+        required
+      />
+      <Input
+        type="number"
+        value={avgPrice}
+        onChange={(e) => setAvgPrice(e.target.value)}
+        placeholder="Average Price"
+        required
+      />
+      <div className="space-x-2">
+        <Button type="submit">Save</Button>
+        <Button type="button" onClick={onCancel} variant="outline">
+          Cancel
+        </Button>
+      </div>
+    </form>
   );
 }

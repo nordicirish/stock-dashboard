@@ -22,6 +22,7 @@ export interface Stock {
   name: string;
   quantity: number;
   avgPrice: number;
+  exchange?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
