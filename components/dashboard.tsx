@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StockChart from "./stock-line-chart";
-import { StockPieChart } from "./stock-pie-chart";
+import { StockPortfolio } from "./stock-portfolio";
 import { Stock } from "@/types/stock";
 import { getStocks, updateStock, deleteStock, addStock } from "@/app/actions";
 
@@ -89,8 +89,7 @@ export function Dashboard() {
       <main className="flex-1 p-4 lg:p-6 space-y-4">
         <div className="grid gap-4 md:grid-cols-2">
           <StockChart />
-          <StockPieChart
-            key={stocks.length} // Add this line
+          <StockPortfolio
             stocks={stocks}
             onAddStock={handleAddStock}
             onUpdateStock={handleUpdateStock}
