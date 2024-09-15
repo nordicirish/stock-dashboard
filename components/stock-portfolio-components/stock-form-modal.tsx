@@ -8,9 +8,10 @@ interface StockFormModalProps {
   existingStock?: Stock;
   onSubmit: (stock: Omit<Stock, "id" | "createdAt" | "updatedAt">) => void;
   onCancel: () => void;
+  isLoading: boolean;
 }
 
-export function StockFormModal({ existingStock, onSubmit, onCancel }: StockFormModalProps) {
+export function StockFormModal({ existingStock, onSubmit, onCancel, isLoading }: StockFormModalProps) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <Card className="w-full max-w-md">
@@ -27,6 +28,7 @@ export function StockFormModal({ existingStock, onSubmit, onCancel }: StockFormM
             existingStock={existingStock}
             onSubmit={onSubmit}
             onCancel={onCancel}
+            isLoading={isLoading}
           />
         </CardContent>
       </Card>

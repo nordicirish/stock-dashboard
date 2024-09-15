@@ -16,12 +16,14 @@ interface StockFormProps {
   existingStock?: Stock;
   onSubmit: (stock: Omit<Stock, "id" | "createdAt" | "updatedAt">) => void;
   onCancel?: () => void;
+  isLoading: boolean;
 }
 
 export function StockForm({
   existingStock,
   onSubmit,
   onCancel,
+  isLoading,
 }: StockFormProps) {
   const [selectedStock, setSelectedStock] = useState<StockListing | null>(
     existingStock
@@ -166,12 +168,12 @@ export function StockForm({
           </div>
           <div className="flex justify-end space-x-2 mt-6">
             {onCancel && (
-              <Button type="button" onClick={onCancel} variant="outline">
+              <Button type="button" onClick={onCancel} variant="outline" disabled={isLoading}>
                 Cancel
               </Button>
             )}
-            <Button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white">
-              {existingStock ? "Update" : "Add"} Stock
+            <Button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white" disabled={isLoading}>
+              {isLoading ? "Loading..." : existingStock ? "Update" : "Add"} Stock
             </Button>
           </div>
         </form>
