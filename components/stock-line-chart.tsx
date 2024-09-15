@@ -41,22 +41,25 @@ export default function StockLineChart() {
   const [searchValue, setSearchValue] = useState("");
   const [stocks, setStocks] = useState<StockListing[]>([]);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const [defaultStock] = useState<StockListing>({
+    symbol: "^GSPC",
+    name: "S&P 500",
+  });
 
   const updateStockData = useCallback(() => {
-    if (selectedStock) {
-      startTransition(async () => {
-        try {
-          const data = await fetchStockData(
-            selectedStock.symbol,
-            selectedTimeframe
-          );
-          setStockData(data);
-        } catch (error) {
-          console.error("Error fetching stock data:", error);
-        }
-      });
-    }
-  }, [selectedStock, selectedTimeframe]);
+    const stockToFetch = selectedStock || defaultStock;
+    startTransition(async () => {
+      try {
+        const data = await fetchStockData(
+          stockToFetch.symbol,
+          selectedTimeframe
+        );
+        setStockData(data);
+      } catch (error) {
+        console.error("Error fetching stock data:", error);
+      }
+    });
+  }, [selectedStock, defaultStock, selectedTimeframe]);
 
   useEffect(() => {
     updateStockData();
@@ -67,7 +70,7 @@ export default function StockLineChart() {
     formatTimeForXAxis.labelCount = 0;
     
     return () => clearInterval(intervalId);
-  }, [updateStockData, selectedTimeframe]); // Add selectedTimeframe to the dependency array
+  }, [updateStockData, selectedTimeframe]);
 
   const handleSearch = useCallback((value: string) => {
     setSearchValue(value);
@@ -153,7 +156,12 @@ export default function StockLineChart() {
             </SelectContent>
           </Select>
         </div>
-        {selectedTimeframe === "1D" && stockData && (
+        {!selectedStock && (
+          <div className="text-sm text-gray-500 text-center mt-2">
+            Showing S&P 500 (Default)
+          </div>
+        )}
+        {(selectedStock || defaultStock) && selectedTimeframe === "1D" && stockData && (
           <div className="text-sm text-gray-500 text-center mt-2">
             {formatDateLabel(stockData.data[0].timestamp, stockData.timezone)}
           </div>
@@ -197,7 +205,7 @@ export default function StockLineChart() {
           </ResponsiveContainer>
         ) : (
           <div className="flex justify-center items-center h-[400px]">
-            Select a stock to view data
+            Unable to load stock data
           </div>
         )}
       </CardContent>
