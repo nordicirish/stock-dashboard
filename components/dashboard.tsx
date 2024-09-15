@@ -48,7 +48,9 @@ export function Dashboard() {
       const updatedStockFromServer = await updateStock(userId, updatedStock);
       setStocks((prevStocks) =>
         prevStocks.map((stock) =>
-          stock.id === updatedStockFromServer.id ? updatedStockFromServer : stock
+          stock.id === updatedStockFromServer.id
+            ? updatedStockFromServer
+            : stock
         )
       );
       await fetchStocks(); // Refetch all stocks to ensure consistency
@@ -76,6 +78,8 @@ export function Dashboard() {
       // TODO: Add AI response logic here
     }
   };
+
+
 
   return (
     <div className="flex flex-col min-h-screen bg-background">

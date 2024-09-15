@@ -151,3 +151,39 @@ export async function deleteStock(userId: string, stockId: number): Promise<void
     },
   });
 }
+
+export async function getCurrentPrices(symbols: string[]): Promise<Record<string, number>> {
+  const symbolString = symbols.join(',');
+  const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbolString}`;
+
+  try {
+    const response = await fetch(url, { next: { revalidate: 60 } }); // Cache for 60 seconds
+    if (!response.ok) {
+      console.error(`HTTP error! status: ${response.status}`);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (!data.quoteResponse || !data.quoteResponse.result) {
+      console.error('Unexpected response structure:', data);
+      throw new Error('Unexpected response structure');
+    }
+
+    interface YahooQuoteResult {
+      symbol: string;
+      regularMarketPrice: number;
+    }
+
+    const result: Record<string, number> = {};
+    data.quoteResponse.result.forEach((quote: YahooQuoteResult) => {
+      if (quote.symbol && quote.regularMarketPrice) {
+        result[quote.symbol] = quote.regularMarketPrice;
+      }
+    });
+
+    return result;
+  } catch (error) {
+    console.error('Error fetching current prices:', error);
+    return {}; // Return an empty object instead of throwing
+  }
+}
