@@ -12,14 +12,14 @@ const COLORS = [
 
 interface StockPieChartProps {
   stocks: Stock[];
-  currentPrices: Record<string, number>;
+  currentPrices: Record<string, { price: number, percentChange: number }>;
 }
 
 export function StockPieChart({ stocks, currentPrices }: StockPieChartProps) {
   const pieData = stocks.map((stock) => ({
     symbol: stock.symbol,
     name: stock.name,
-    value: stock.quantity * (currentPrices[stock.symbol] || stock.avgPrice),
+    value: stock.quantity * (currentPrices[stock.symbol]?.price || stock.avgPrice),
   }));
 
   return (

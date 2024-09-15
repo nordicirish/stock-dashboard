@@ -7,13 +7,14 @@ import { Input } from "@/components/ui/input";
 import StockChart from "./stock-line-chart";
 import { StockPortfolio } from "./stock-portfolio";
 import { Stock } from "@/types/stock";
-import { getStocks, updateStock, deleteStock, addStock } from "@/app/actions";
+import { getStocks, updateStock, deleteStock, addStock, getCurrentPrices } from "@/app/actions";
 
 // Remove this type as it's no longer needed
 // export type StockWithId = Omit<Stock, 'id'> & { id: string };
 
 export function Dashboard() {
   const [stocks, setStocks] = useState<Stock[]>([]);
+  const [currentPrices, setCurrentPrices] = useState<Record<string, { price: number, percentChange: number }>>({});
   const [messages, setMessages] = useState<{ sender: string; text: string }[]>(
     []
   );
@@ -24,20 +25,45 @@ export function Dashboard() {
     try {
       const fetchedStocks = await getStocks(userId);
       setStocks(fetchedStocks);
+      return fetchedStocks;
     } catch (error) {
       console.error("Error fetching stocks:", error);
     }
   }, [userId]);
 
+  const fetchCurrentPrices = useCallback(async (stocksToFetch: Stock[]) => {
+    try {
+      const symbols = stocksToFetch.map(stock => stock.symbol);
+      const prices = await getCurrentPrices(symbols);
+      setCurrentPrices(prices);
+    } catch (error) {
+      console.error("Error fetching current prices:", error);
+    }
+  }, []);
+
+  const refreshData = useCallback(async () => {
+    const fetchedStocks = await fetchStocks();
+    if (fetchedStocks) {
+      await fetchCurrentPrices(fetchedStocks);
+    }
+  }, [fetchStocks, fetchCurrentPrices]);
+
   useEffect(() => {
-    fetchStocks();
-  }, [fetchStocks]);
+    refreshData();
+
+    // Set up interval for periodic refresh
+    const intervalId = setInterval(() => {
+      refreshData();
+    }, 60000); // Refresh every 60 seconds
+
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId);
+  }, [refreshData]);
 
   const handleAddStock = async (newStock: Omit<Stock, "id">) => {
     try {
       const addedStock = await addStock(userId, newStock);
-      setStocks((prevStocks) => [...prevStocks, addedStock]);
-      await fetchStocks(); // Refetch all stocks to ensure consistency
+      await refreshData();
     } catch (error) {
       console.error("Error adding stock:", error);
     }
@@ -45,15 +71,8 @@ export function Dashboard() {
 
   const handleUpdateStock = async (updatedStock: Stock) => {
     try {
-      const updatedStockFromServer = await updateStock(userId, updatedStock);
-      setStocks((prevStocks) =>
-        prevStocks.map((stock) =>
-          stock.id === updatedStockFromServer.id
-            ? updatedStockFromServer
-            : stock
-        )
-      );
-      await fetchStocks(); // Refetch all stocks to ensure consistency
+      await updateStock(userId, updatedStock);
+      await refreshData();
     } catch (error) {
       console.error("Error updating stock:", error);
     }
@@ -62,10 +81,7 @@ export function Dashboard() {
   const handleDeleteStock = async (stockId: number) => {
     try {
       await deleteStock(userId, stockId);
-      setStocks((prevStocks) =>
-        prevStocks.filter((stock) => stock.id !== stockId)
-      );
-      await fetchStocks(); // Refetch all stocks to ensure consistency
+      await refreshData();
     } catch (error) {
       console.error("Error deleting stock:", error);
     }
@@ -79,8 +95,6 @@ export function Dashboard() {
     }
   };
 
-
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <header className="px-4 lg:px-6 h-14 flex items-center">
@@ -91,6 +105,7 @@ export function Dashboard() {
           <StockChart />
           <StockPortfolio
             stocks={stocks}
+            currentPrices={currentPrices}
             onAddStock={handleAddStock}
             onUpdateStock={handleUpdateStock}
             onDeleteStock={handleDeleteStock}

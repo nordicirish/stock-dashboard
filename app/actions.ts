@@ -92,7 +92,12 @@ export async function addStock(userId: string, stockData: Omit<Stock, "id" | "cr
     if (existingStock) {
       // If the stock exists, update it
       const updatedStock = await prisma.stock.update({
-        where: { id: existingStock.id },
+        where: { 
+          userId_symbol: {
+            userId: userId,
+            symbol: stockData.symbol,
+          }
+        },
         data: {
           quantity: existingStock.quantity + stockData.quantity,
           avgPrice: (existingStock.avgPrice * existingStock.quantity + stockData.avgPrice * stockData.quantity) / (existingStock.quantity + stockData.quantity),
@@ -146,44 +151,36 @@ export async function updateStock(userId: string, stockData: Omit<Stock, "id" | 
 export async function deleteStock(userId: string, stockId: number): Promise<void> {
   await prisma.stock.delete({
     where: {
-      id: stockId,
-      userId: userId,
+      id_userId: {
+        id: stockId,
+        userId: userId,
+      },
     },
   });
 }
 
-export async function getCurrentPrices(symbols: string[]): Promise<Record<string, number>> {
-  const symbolString = symbols.join(',');
-  const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbolString}`;
+export async function getCurrentPrices(symbols: string[]): Promise<Record<string, { price: number, percentChange: number }>> {
+  const result: Record<string, { price: number, percentChange: number }> = {};
 
-  try {
-    const response = await fetch(url, { next: { revalidate: 60 } }); // Cache for 60 seconds
-    if (!response.ok) {
-      console.error(`HTTP error! status: ${response.status}`);
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+  for (const symbol of symbols) {
+    const url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${process.env.FINNHUB_API_KEY}`;
 
-    const data = await response.json();
-    if (!data.quoteResponse || !data.quoteResponse.result) {
-      console.error('Unexpected response structure:', data);
-      throw new Error('Unexpected response structure');
-    }
-
-    interface YahooQuoteResult {
-      symbol: string;
-      regularMarketPrice: number;
-    }
-
-    const result: Record<string, number> = {};
-    data.quoteResponse.result.forEach((quote: YahooQuoteResult) => {
-      if (quote.symbol && quote.regularMarketPrice) {
-        result[quote.symbol] = quote.regularMarketPrice;
+    try {
+      const response = await fetch(url, { next: { revalidate: 60 } });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    });
 
-    return result;
-  } catch (error) {
-    console.error('Error fetching current prices:', error);
-    return {}; // Return an empty object instead of throwing
+      const data = await response.json();
+
+      result[symbol] = {
+        price: data.c,
+        percentChange: data.dp,
+      };
+    } catch (error) {
+      console.error(`Error fetching current price for ${symbol}:`, error);
+    }
   }
+
+  return result;
 }

@@ -3,13 +3,13 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Stock } from "@/types/stock";
-import { getCurrentPrices } from "@/app/actions";
 import { StockPieChart } from "./stock-portfolio-components/stock-pie-chart";
 import { StockTable } from "./stock-portfolio-components/stock-table";
 import { StockFormModal } from "./stock-portfolio-components/stock-form-modal";
 
 interface StockPortfolioProps {
   stocks: Stock[];
+  currentPrices: Record<string, { price: number, percentChange: number }>;
   onAddStock: (stock: Omit<Stock, "id">) => void;
   onUpdateStock: (stock: Stock) => void;
   onDeleteStock: (stockId: number) => void;
@@ -17,33 +17,21 @@ interface StockPortfolioProps {
 
 export function StockPortfolio({
   stocks,
+  currentPrices,
   onAddStock,
   onUpdateStock,
   onDeleteStock,
 }: StockPortfolioProps) {
   const [editingStock, setEditingStock] = useState<Stock | null>(null);
   const [addingStock, setAddingStock] = useState(false);
-  const [currentPrices, setCurrentPrices] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchCurrentPrices = async () => {
-      try {
-        const symbols = stocks.map(stock => stock.symbol);
-        const prices = await getCurrentPrices(symbols);
-        setCurrentPrices(prices);
-        setError(null);
-      } catch (error) {
-        console.error('Error fetching current prices:', error);
-        setError('Unable to fetch current prices. Using average prices instead.');
-      }
-    };
-
-    fetchCurrentPrices();
-    const interval = setInterval(fetchCurrentPrices, 60000); // Update every minute
-
-    return () => clearInterval(interval);
-  }, [stocks]);
+    // Clear the error when currentPrices are updated
+    if (Object.keys(currentPrices).length > 0) {
+      setError(null);
+    }
+  }, [currentPrices]);
 
   if (stocks.length === 0) {
     return (
