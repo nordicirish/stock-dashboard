@@ -4,17 +4,25 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import StockChart from "./stock-line-chart";
+import StockLineChart from "./stock-line-chart";
 import { StockPortfolio } from "./stock-portfolio";
 import { Stock } from "@/types/stock";
-import { getStocks, updateStock, deleteStock, addStock, getCurrentPrices } from "@/app/actions";
+import {
+  getStocks,
+  updateStock,
+  deleteStock,
+  addStock,
+  getCurrentPrices,
+} from "@/app/actions";
 
 // Remove this type as it's no longer needed
 // export type StockWithId = Omit<Stock, 'id'> & { id: string };
 
 export function Dashboard() {
   const [stocks, setStocks] = useState<Stock[]>([]);
-  const [currentPrices, setCurrentPrices] = useState<Record<string, { price: number, percentChange: number }>>({});
+  const [currentPrices, setCurrentPrices] = useState<
+    Record<string, { price: number; percentChange: number }>
+  >({});
   const [messages, setMessages] = useState<{ sender: string; text: string }[]>(
     []
   );
@@ -33,7 +41,7 @@ export function Dashboard() {
 
   const fetchCurrentPrices = useCallback(async (stocksToFetch: Stock[]) => {
     try {
-      const symbols = stocksToFetch.map(stock => stock.symbol);
+      const symbols = stocksToFetch.map((stock) => stock.symbol);
       const prices = await getCurrentPrices(symbols);
       setCurrentPrices(prices);
     } catch (error) {
@@ -63,6 +71,7 @@ export function Dashboard() {
   const handleAddStock = async (newStock: Omit<Stock, "id">) => {
     try {
       const addedStock = await addStock(userId, newStock);
+      console.log("Added stock:", addedStock);
       await refreshData();
     } catch (error) {
       console.error("Error adding stock:", error);
@@ -101,8 +110,7 @@ export function Dashboard() {
         <h1 className="text-lg font-bold">AI Dashboard</h1>
       </header>
       <main className="flex-1 p-4 lg:p-6 space-y-4">
-        <div className="grid gap-4 md:grid-cols-2">
-          <StockChart />
+        <div className="grid gap-4 md:grid-cols-1 ">
           <StockPortfolio
             stocks={stocks}
             currentPrices={currentPrices}
@@ -110,40 +118,42 @@ export function Dashboard() {
             onUpdateStock={handleUpdateStock}
             onDeleteStock={handleDeleteStock}
           />
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Chat with AI</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="h-[200px] overflow-y-auto space-y-2">
-                {messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`p-2 rounded-lg ${
-                      message.sender === "user"
-                        ? "bg-primary text-primary-foreground ml-auto"
-                        : "bg-muted"
-                    } max-w-[80%] w-fit`}
-                  >
-                    {message.text}
+          <div className="w-full flex flex-col sm:flex-row gap-6 mt-2">
+            <StockLineChart />
+            <Card className="w-full sm:w-1/2">
+              <CardHeader>
+                <CardTitle>Chat with AI</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="h-[200px] overflow-y-auto space-y-2">
+                    {messages.map((message, index) => (
+                      <div
+                        key={index}
+                        className={`p-2 rounded-lg ${
+                          message.sender === "user"
+                            ? "bg-primary text-primary-foreground ml-auto"
+                            : "bg-muted"
+                        } max-w-[80%] w-fit`}
+                      >
+                        {message.text}
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              <div className="flex space-x-2">
-                <Input
-                  placeholder="Type your message..."
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleSend()}
-                />
-                <Button onClick={handleSend}>Send</Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                  <div className="flex space-x-2">
+                    <Input
+                      placeholder="Type your message..."
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyPress={(e) => e.key === "Enter" && handleSend()}
+                    />
+                    <Button onClick={handleSend}>Send</Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </main>
     </div>
   );

@@ -89,7 +89,7 @@ export default function StockLineChart() {
   }, []);
 
   return (
-    <Card className="w-full max-w-3xl mx-auto">
+     <Card className="w-full sm:w-1/2">
       <CardHeader>
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
           <Popover open={open} onOpenChange={setOpen}>
