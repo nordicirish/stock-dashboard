@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Plus } from "lucide-react";
 import { Stock } from "@/types/stock";
 import { StockPieChart } from "./stock-portfolio-components/stock-pie-chart";
@@ -9,6 +9,7 @@ import { StockFormModal } from "./stock-portfolio-components/stock-form-modal";
 
 interface StockPortfolioProps {
   stocks: Stock[];
+
   currentPrices: Record<string, { price: number; percentChange: number }>;
   onAddStock: (stock: Omit<Stock, "id">) => Promise<void>;
   onUpdateStock: (stock: Stock) => Promise<void>;
@@ -26,6 +27,13 @@ export function StockPortfolio({
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+// useMemo is used to create an array of colors based on the number of stocks only recalculating when the stocks array changes
+  const COLORS = useMemo(() => {
+  return Array.from(
+    { length: stocks.length },
+    (_, i) => `hsl(${i * 50}, 40%, 50%)`
+  );
+}, [stocks.length]);
 
   useEffect(() => {
     if (Object.keys(currentPrices).length > 0) {
@@ -127,7 +135,7 @@ export function StockPortfolio({
             {error}
           </div>
         )}
-        <StockPieChart stocks={stocks} currentPrices={currentPrices} />
+        <StockPieChart stocks={stocks} currentPrices={currentPrices} COLORS={COLORS}/>
         <StockTable
           stocks={stocks}
           currentPrices={currentPrices}

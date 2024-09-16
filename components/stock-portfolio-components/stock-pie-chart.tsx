@@ -1,21 +1,14 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Stock } from "@/types/stock";
 
-const COLORS = [
-  "#0088FE",
-  "#00C49F",
-  "#FFBB28",
-  "#FF8042",
-  "#8884D8",
-  "#82CA9D",
-];
 
 interface StockPieChartProps {
   stocks: Stock[];
-  currentPrices: Record<string, { price: number, percentChange: number }>;
+  currentPrices: Record<string, { price: number; percentChange: number }>;
+  COLORS: string[];
 }
 
-export function StockPieChart({ stocks, currentPrices }: StockPieChartProps) {
+export function StockPieChart({ stocks, currentPrices, COLORS }: StockPieChartProps) {
   const pieData = stocks.map((stock) => ({
     symbol: stock.symbol,
     name: stock.name,
@@ -23,7 +16,7 @@ export function StockPieChart({ stocks, currentPrices }: StockPieChartProps) {
   }));
 
   return (
-    <div className="h-[20rem] mb-6">
+    <div className="h-[22rem] mb-6">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
