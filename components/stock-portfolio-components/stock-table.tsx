@@ -31,9 +31,9 @@ export function StockTable({
 
   return (
     <Table>
-      <TableHeader>
+      <TableHeader className="dark:bg-slate-950 bg-slate-50 hover:bg-slate-50 dark:hover:bg-slate-950">
         <TableRow>
-          <TableHead className="text-center">Symbol</TableHead>
+          <TableHead className="text-center ">Symbol</TableHead>
           {!isMobile && (
             <>
               <TableHead className="text-center">Quantity</TableHead>
@@ -82,7 +82,7 @@ export function StockTable({
 
           return (
             <React.Fragment key={stock.id}>
-              <TableRow className="hover:bg-muted/50 bg-gray-200">
+              <TableRow className="hover:bg-muted/50 dark:bg-slate-700 bg-slate-100">
                 <TableCell className="font-medium text-center ">
                   {stock.symbol}
                 </TableCell>
@@ -161,7 +161,8 @@ export function StockTable({
                       <div>Avg Purc Price: ${stock.avgPrice.toFixed(2)}</div>
                       <div>Current: ${currentPriceData.price.toFixed(2)}</div>
                       <div className={textColor}>
-                        Daily: {currentPriceData.percentChange.toFixed(2)}%
+                        Daily: ${Math.abs(dailyChangePerShare).toFixed(2)} (
+                        {currentPriceData.percentChange.toFixed(2)}%)
                       </div>
                       <div>
                         Value: $
@@ -171,7 +172,12 @@ export function StockTable({
                         })}
                       </div>
                       <div className={totalGainTextColor}>
-                        Gain: {totalGainPercent.toFixed(2)}%
+                        Gain: $
+                        {Math.abs(totalGainValue).toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}{" "}
+                        ({totalGainPercent.toFixed(2)}%)
                       </div>
                     </div>
                   </TableCell>
