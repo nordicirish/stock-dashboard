@@ -107,7 +107,7 @@ export function Dashboard() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <header className="px-4 lg:px-6 h-14 flex items-center">
-        <h1 className="text-lg font-bold">AI Dashboard</h1>
+        <h1 className="text-lg font-bold">Stock Dashboard</h1>
       </header>
       <main className="flex-1 p-4 lg:p-6 space-y-4">
         <div className="grid gap-4 md:grid-cols-1 ">
