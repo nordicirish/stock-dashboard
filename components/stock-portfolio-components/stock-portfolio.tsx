@@ -3,9 +3,9 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect, useMemo } from "react";
 import { Plus } from "lucide-react";
 import { Stock } from "@/types/stock";
-import { StockPieChart } from "./stock-portfolio-components/stock-pie-chart";
-import { StockTable } from "./stock-portfolio-components/stock-table";
-import { StockFormModal } from "./stock-portfolio-components/stock-form-modal";
+import { StockPieChart } from "./stock-pie-chart";
+import { StockTable } from "./stock-table";
+import { StockFormModal } from "./stock-form-modal";
 
 interface StockPortfolioProps {
   stocks: Stock[];

@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { Stock } from "@/types/stock";
-import { StockForm } from "../stock-form";
+import { StockForm } from "./stock-form";
 
 interface StockFormModalProps {
   existingStock?: Stock;

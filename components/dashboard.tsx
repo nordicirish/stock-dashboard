@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import StockLineChart from "./stock-line-chart";
-import { StockPortfolio } from "./stock-portfolio";
+import StockLineChart from "./stock-linechart-components/stock-line-chart";
+import { StockPortfolio } from "./stock-portfolio-components/stock-portfolio";
 import { Stock } from "@/types/stock";
 import {
   getStocks,
@@ -14,9 +14,6 @@ import {
   addStock,
   getCurrentPrices,
 } from "@/app/actions";
-
-// Remove this type as it's no longer needed
-// export type StockWithId = Omit<Stock, 'id'> & { id: string };
 
 export function Dashboard() {
   const [stocks, setStocks] = useState<Stock[]>([]);
@@ -118,9 +115,9 @@ export function Dashboard() {
             onUpdateStock={handleUpdateStock}
             onDeleteStock={handleDeleteStock}
           />
-          <div className="w-full flex flex-col sm:flex-row gap-6 mt-2">
+          <div className="w-full flex flex-col md:flex-row gap-6 mt-2">
             <StockLineChart />
-            <Card className="w-full sm:w-1/2">
+            <Card className="w-full md:w-1/2">
               <CardHeader>
                 <CardTitle>Chat with AI</CardTitle>
               </CardHeader>
