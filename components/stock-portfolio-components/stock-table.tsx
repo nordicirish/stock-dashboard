@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -8,17 +10,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, TrendingUp, TrendingDown } from "lucide-react";
+import {
+  Edit,
+  Trash2,
+  TrendingUp,
+  TrendingDown,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 import { Stock } from "@/types/stock";
 import { useTheme } from "next-themes";
 import { useIsMobile } from "../../hooks/use-mobile";
-
-interface StockTableProps {
-  stocks: Stock[];
-  currentPrices: Record<string, { price: number; percentChange: number }>;
-  onEdit: (stock: Stock) => void;
-  onDelete: (stockId: number) => void;
-}
+import { StockTableProps, SortOrder } from "@/types/stock";
 
 export function StockTable({
   stocks,
@@ -28,12 +31,35 @@ export function StockTable({
 }: StockTableProps) {
   const { theme } = useTheme();
   const isMobile = useIsMobile();
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+
+  const sortedStocks = useMemo(() => {
+    return [...stocks].sort((a, b) => {
+      return sortOrder === "asc"
+        ? a.symbol.localeCompare(b.symbol)
+        : b.symbol.localeCompare(a.symbol);
+    });
+  }, [stocks, sortOrder]);
+
+  const handleSort = () => {
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+  };
 
   return (
     <Table>
       <TableHeader className="dark:bg-slate-950 bg-slate-50 hover:bg-slate-50 dark:hover:bg-slate-950">
         <TableRow>
-          <TableHead className="text-center ">Symbol</TableHead>
+          <TableHead
+            className="text-center cursor-pointer"
+            onClick={handleSort}
+          >
+            Symbol{" "}
+            {sortOrder === "asc" ? (
+              <ChevronUp className="h-4 w-4 inline-block ml-1" />
+            ) : (
+              <ChevronDown className="h-4 w-4 inline-block ml-1" />
+            )}
+          </TableHead>
           {!isMobile && (
             <>
               <TableHead className="text-center">Quantity</TableHead>
@@ -48,7 +74,7 @@ export function StockTable({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {stocks.map((stock) => {
+        {sortedStocks.map((stock) => {
           const currentPriceData = currentPrices[stock.symbol] || {
             price: stock.avgPrice,
             percentChange: 0,
@@ -83,7 +109,7 @@ export function StockTable({
           return (
             <React.Fragment key={stock.id}>
               <TableRow className="hover:bg-muted/50 dark:bg-slate-700 bg-slate-100">
-                <TableCell className="font-medium text-center ">
+                <TableCell className="font-medium text-center">
                   {stock.symbol}
                 </TableCell>
                 {!isMobile && (
@@ -104,8 +130,8 @@ export function StockTable({
                         ) : (
                           <TrendingDown className="inline mr-1 h-4 w-4" />
                         )}
-                        {currentPriceData.percentChange.toFixed(2)}% ($
-                        {Math.abs(dailyChangePerShare).toFixed(2)})
+                        ${Math.abs(dailyChangePerShare).toFixed(2)} (
+                        {currentPriceData.percentChange.toFixed(2)}%)
                       </div>
                     </TableCell>
                     <TableCell className="text-center font-medium">
@@ -156,7 +182,7 @@ export function StockTable({
               {isMobile && (
                 <TableRow className="hover:bg-muted/50">
                   <TableCell colSpan={2}>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="grid grid-cols-2 gap-0 text-xs text-center">
                       <div>Quantity: {stock.quantity.toLocaleString()}</div>
                       <div>Avg Purc Price: ${stock.avgPrice.toFixed(2)}</div>
                       <div>Current: ${currentPriceData.price.toFixed(2)}</div>
