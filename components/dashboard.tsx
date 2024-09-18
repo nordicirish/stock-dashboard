@@ -55,20 +55,13 @@ export function Dashboard() {
 
   useEffect(() => {
     refreshData();
-
-    // Set up interval for periodic refresh
-    const intervalId = setInterval(() => {
-      refreshData();
-    }, 60000); // Refresh every 60 seconds
-
-    // Clean up interval on component unmount
+    const intervalId = setInterval(refreshData, 60000); // Refresh every 60 seconds
     return () => clearInterval(intervalId);
   }, [refreshData]);
 
   const handleAddStock = async (newStock: Omit<Stock, "id">) => {
     try {
-      const addedStock = await addStock(userId, newStock);
-      console.log("Added stock:", addedStock);
+      await addStock(userId, newStock);
       await refreshData();
     } catch (error) {
       console.error("Error adding stock:", error);
@@ -102,56 +95,52 @@ export function Dashboard() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <header className="px-4 lg:px-6 h-14 flex items-center">
+    <main className="flex-1 p-0 sm:p-4 space-y-4">
+      <header className="flex items-center h-14">
         <h1 className="text-lg font-bold">Stock Dashboard</h1>
       </header>
-      <main className="flex-1 p-4 lg:p-6 space-y-4">
-        <div className="grid gap-4 md:grid-cols-1 ">
-          <StockPortfolio
-            stocks={stocks}
-            currentPrices={currentPrices}
-            onAddStock={handleAddStock}
-            onUpdateStock={handleUpdateStock}
-            onDeleteStock={handleDeleteStock}
-          />
-          <div className="w-full flex flex-col md:flex-row gap-6 mt-2">
-            <StockLineChart />
-            <Card className="w-full md:w-1/2">
-              <CardHeader>
-                <CardTitle>Chat with AI</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="h-[200px] overflow-y-auto space-y-2">
-                    {messages.map((message, index) => (
-                      <div
-                        key={index}
-                        className={`p-2 rounded-lg ${
-                          message.sender === "user"
-                            ? "bg-primary text-primary-foreground ml-auto"
-                            : "bg-muted"
-                        } max-w-[80%] w-fit`}
-                      >
-                        {message.text}
-                      </div>
-                    ))}
+      <StockPortfolio
+        stocks={stocks}
+        currentPrices={currentPrices}
+        onAddStock={handleAddStock}
+        onUpdateStock={handleUpdateStock}
+        onDeleteStock={handleDeleteStock}
+      />
+      <div className="flex flex-col md:flex-row gap-6">
+        <StockLineChart />
+        <Card className="flex-1">
+          <CardHeader>
+            <CardTitle>Chat with AI</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="h-[200px] overflow-y-auto space-y-2">
+                {messages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={`p-2 rounded-lg ${
+                      message.sender === "user"
+                        ? "bg-primary text-primary-foreground ml-auto"
+                        : "bg-muted"
+                    } max-w-[80%] w-fit`}
+                  >
+                    {message.text}
                   </div>
-                  <div className="flex space-x-2">
-                    <Input
-                      placeholder="Type your message..."
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      onKeyPress={(e) => e.key === "Enter" && handleSend()}
-                    />
-                    <Button onClick={handleSend}>Send</Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </main>
-    </div>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Type your message..."
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && handleSend()}
+                />
+                <Button onClick={handleSend}>Send</Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </main>
   );
 }

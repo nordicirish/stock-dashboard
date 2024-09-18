@@ -31,3 +31,17 @@ export interface YahooQuote {
   longname?: string;
   exchange: string;
 }
+
+export interface StockTableProps {
+  stocks: Stock[];
+  currentPrices: Record<string, { price: number; percentChange: number }>;
+  onEdit: (stock: Stock) => void;
+  onDelete: (stockId: number) => void;
+}
+
+export type SortOrder = "asc" | "desc";
+
+export interface SortButtonProps {
+  sortOrder: SortOrder;
+  onSort: () => void;
+}
