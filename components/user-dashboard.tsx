@@ -109,9 +109,6 @@ export function UserDashboard() {
 
   return (
     <main className="flex-1 p-0 sm:p-4 space-y-4">
-      <header className="flex items-center h-14">
-        <h1 className="text-lg font-bold">Stock Dashboard</h1>
-      </header>
       <StockPortfolio
         stocks={stocks}
         currentPrices={currentPrices}

@@ -26,7 +26,7 @@ import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
 import { StorageCard } from "@/components/storage-card";
 // import { TeamSwitcher } from "@/components/team-switcher"
-import { ModeToggle } from "@/components/mode-toggle";
+import ThemeToggle from "@/components/theme-toggle";
 import {
   Sidebar,
   SidebarContent,
@@ -252,8 +252,7 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="flex justify-evenly">
-        <span>Choose a mode:&nbsp;</span>
-        <ModeToggle />
+        <span>Menu</span>
       </SidebarHeader>
       <SidebarContent>
         <SidebarItem>
