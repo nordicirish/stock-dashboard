@@ -2,13 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import {
-  ClerkProvider,
-  SignInButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from "@clerk/nextjs";
+import { ClerkProvider, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -39,13 +33,15 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           <header className="flex items-center justify-center p-4">
-            <h1>StockBoard</h1>{" "}
-            <SignedOut>
-              <SignInButton mode="modal" />
-            </SignedOut>
-            <SignedIn>
-              <UserButton showName />
-            </SignedIn>
+            <h1>Stock Market Dashboard</h1>
+            <SignedOut />
+           
+              <SignedIn>
+                 <span className="ml-2 flex space-x-2 bg-slate-100 p-2 rounded-md dark:bg-slate-300">
+                <UserButton showName />
+                 </span>
+              </SignedIn>
+           
           </header>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <div className="relative min-h-screen">{children}</div>
