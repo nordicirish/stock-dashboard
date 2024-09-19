@@ -1,11 +1,19 @@
 "use server";
 
-
 import { StockData, StockListing, YahooQuote, Stock } from "@/types/stock";
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from "@prisma/client";
+import { auth } from "@clerk/nextjs/server";
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
+// Helper function to get the current user ID from Clerk auth server and negates the need to pass it in as a parameter on the client
+async function getCurrentUserId() {
+  const { userId } = auth();
+  if (!userId) {
+    throw new Error("User not authenticated");
+  }
+  return userId;
+}
 
 export async function fetchStockData(
   symbol: string,
@@ -77,7 +85,10 @@ export async function searchStocks(query: string): Promise<StockListing[]> {
   }));
 }
 
-export async function addStock(userId: string, stockData: Omit<Stock, "id" | "createdAt" | "updatedAt">): Promise<Stock> {
+export async function addStock(
+  stockData: Omit<Stock, "id" | "createdAt" | "updatedAt">
+): Promise<Stock> {
+  const userId = await getCurrentUserId();
   try {
     // Check if the stock already exists for this user
     const existingStock = await prisma.stock.findUnique({
@@ -92,15 +103,18 @@ export async function addStock(userId: string, stockData: Omit<Stock, "id" | "cr
     if (existingStock) {
       // If the stock exists, update it
       const updatedStock = await prisma.stock.update({
-        where: { 
+        where: {
           userId_symbol: {
             userId: userId,
             symbol: stockData.symbol,
-          }
+          },
         },
         data: {
           quantity: existingStock.quantity + stockData.quantity,
-          avgPrice: (existingStock.avgPrice * existingStock.quantity + stockData.avgPrice * stockData.quantity) / (existingStock.quantity + stockData.quantity),
+          avgPrice:
+            (existingStock.avgPrice * existingStock.quantity +
+              stockData.avgPrice * stockData.quantity) /
+            (existingStock.quantity + stockData.quantity),
         },
       });
       return updatedStock;
@@ -120,13 +134,17 @@ export async function addStock(userId: string, stockData: Omit<Stock, "id" | "cr
   }
 }
 
-export async function getStocks(userId: string): Promise<Stock[]> {
+export async function getStocks(): Promise<Stock[]> {
+  const userId = await getCurrentUserId();
   return await prisma.stock.findMany({
     where: { userId: userId },
   });
 }
 
-export async function updateStock(userId: string, stockData: Omit<Stock, "id" | "createdAt" | "updatedAt">): Promise<Stock> {
+export async function updateStock(
+  stockData: Omit<Stock, "id" | "createdAt" | "updatedAt">
+): Promise<Stock> {
+  const userId = await getCurrentUserId();
   try {
     const updatedStock = await prisma.stock.update({
       where: {
@@ -148,7 +166,8 @@ export async function updateStock(userId: string, stockData: Omit<Stock, "id" | 
   }
 }
 
-export async function deleteStock(userId: string, stockId: number): Promise<void> {
+export async function deleteStock(stockId: number): Promise<void> {
+  const userId = await getCurrentUserId();
   await prisma.stock.delete({
     where: {
       id_userId: {
@@ -159,8 +178,10 @@ export async function deleteStock(userId: string, stockId: number): Promise<void
   });
 }
 
-export async function getCurrentPrices(symbols: string[]): Promise<Record<string, { price: number, percentChange: number }>> {
-  const result: Record<string, { price: number, percentChange: number }> = {};
+export async function getCurrentPrices(
+  symbols: string[]
+): Promise<Record<string, { price: number; percentChange: number }>> {
+  const result: Record<string, { price: number; percentChange: number }> = {};
 
   for (const symbol of symbols) {
     const url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${process.env.FINNHUB_API_KEY}`;

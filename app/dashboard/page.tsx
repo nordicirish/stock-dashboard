@@ -1,6 +1,6 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarLayout, SidebarTrigger } from "@/components/ui/sidebar";
-import { Dashboard } from "@/components/dashboard";
+import { UserDashboard } from "@/components/user-dashboard";
 
 export default async function Page() {
   const { cookies } = await import("next/headers");
@@ -12,7 +12,7 @@ export default async function Page() {
       <div className="flex flex-1 flex-col items-center">
         <div className="h-full w-full max-w-[82rem] rounded-md border-2 border-dashed my-4">
           <SidebarTrigger />
-          <Dashboard />
+          <UserDashboard />
         </div>
       </div>
     </SidebarLayout>
