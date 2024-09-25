@@ -1,20 +1,20 @@
 "use server";
 
 import { StockData, StockListing, YahooQuote, Stock } from "@/types/stock";
-import { PrismaClient } from "@prisma/client";
-import { auth } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
+// Helper function to get the current user ID from NextAuth server and negates the need to pass it in as a parameter on the client
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-// Helper function to get the current user ID from Clerk auth server and negates the need to pass it in as a parameter on the client
-async function getCurrentUserId() {
-  const { userId } = auth();
-  if (!userId) {
+async function getCurrentUserId(): Promise<string> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
     throw new Error("User not authenticated");
   }
-  return userId;
+  return session.user.id;
 }
-
+// Fetch stock data from Yahoo Finance API
 export async function fetchStockData(
   symbol: string,
   timeframe: string
@@ -44,7 +44,6 @@ export async function fetchStockData(
   }
 
   const data = await response.json();
-
   const timestamps = data.chart.result[0].timestamp;
   const prices = data.chart.result[0].indicators.quote[0].close;
   const meta = data.chart.result[0].meta;
@@ -63,6 +62,7 @@ export async function fetchStockData(
   };
 }
 
+// Search stocks based on query
 export async function searchStocks(query: string): Promise<StockListing[]> {
   const url = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(
     query
@@ -85,12 +85,12 @@ export async function searchStocks(query: string): Promise<StockListing[]> {
   }));
 }
 
+// Add or update a stock for the current user
 export async function addStock(
   stockData: Omit<Stock, "id" | "createdAt" | "updatedAt">
 ): Promise<Stock> {
   const userId = await getCurrentUserId();
   try {
-    // Check if the stock already exists for this user
     const existingStock = await prisma.stock.findUnique({
       where: {
         userId_symbol: {
@@ -101,8 +101,8 @@ export async function addStock(
     });
 
     if (existingStock) {
-      // If the stock exists, update it
-      const updatedStock = await prisma.stock.update({
+      // Update existing stock
+      return await prisma.stock.update({
         where: {
           userId_symbol: {
             userId: userId,
@@ -117,23 +117,27 @@ export async function addStock(
             (existingStock.quantity + stockData.quantity),
         },
       });
-      return updatedStock;
     } else {
-      // If the stock doesn't exist, create a new one
-      const newStock = await prisma.stock.create({
+      // Create new stock
+      return await prisma.stock.create({
         data: {
           ...stockData,
           userId: userId,
         },
       });
-      return newStock;
     }
-  } catch (error) {
-    console.error("Error adding stock:", error);
-    throw error;
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message === "User not authenticated") {
+      // Handle the case where the user is not authenticated
+      // For example, you could redirect the user to the login page
+      throw new Error("Please log in to add a stock");
+    } else {
+      throw error;
+    }
   }
 }
 
+// Get all stocks for the current user
 export async function getStocks(): Promise<Stock[]> {
   const userId = await getCurrentUserId();
   return await prisma.stock.findMany({
@@ -141,6 +145,7 @@ export async function getStocks(): Promise<Stock[]> {
   });
 }
 
+// Update stock details for the current user
 export async function updateStock(
   stockData: Omit<Stock, "id" | "createdAt" | "updatedAt">
 ): Promise<Stock> {
@@ -166,18 +171,18 @@ export async function updateStock(
   }
 }
 
+// Delete a stock for the current user
 export async function deleteStock(stockId: number): Promise<void> {
   const userId = await getCurrentUserId();
   await prisma.stock.delete({
     where: {
-      id_userId: {
-        id: stockId,
-        userId: userId,
-      },
+      id: stockId,
+      userId: userId,
     },
   });
 }
 
+// Fetch current prices for a list of symbols
 export async function getCurrentPrices(
   symbols: string[]
 ): Promise<Record<string, { price: number; percentChange: number }>> {

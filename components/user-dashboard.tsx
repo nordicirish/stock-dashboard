@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,10 +15,9 @@ import {
   addStock,
   getCurrentPrices,
 } from "@/app/actions";
-import { useUser } from "@clerk/nextjs";
 
-export function UserDashboard() {
-  const { user } = useUser();
+export default function UserDashboard() {
+  const { data: session, status } = useSession();
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [currentPrices, setCurrentPrices] = useState<
     Record<string, { price: number; percentChange: number }>
@@ -55,12 +55,12 @@ export function UserDashboard() {
   }, [fetchStocks, fetchCurrentPrices]);
 
   useEffect(() => {
-    if (user) {
+    if (status === "authenticated") {
       refreshData();
       const intervalId = setInterval(refreshData, 60000); // Refresh every 60 seconds
       return () => clearInterval(intervalId);
     }
-  }, [refreshData, user]);
+  }, [refreshData, status]);
 
   const handleAddStock = async (newStock: Omit<Stock, "id">) => {
     try {
@@ -93,11 +93,28 @@ export function UserDashboard() {
     if (input.trim()) {
       setMessages([...messages, { sender: "user", text: input.trim() }]);
       setInput("");
-      // TODO: Add AI response logic here
+      // Simulate AI response
+      setTimeout(() => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            sender: "ai",
+            text: "I'm sorry, but I'm not a real AI assistant. I'm just a simulated response in this example.",
+          },
+        ]);
+      }, 1000);
     }
   };
 
-  if (!user) {
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-lg font-medium text-gray-600">Loading...</p>
+      </div>
+    );
+  }
+
+  if (status === "unauthenticated") {
     return (
       <div className="flex items-center justify-center h-screen">
         <p className="text-lg font-medium text-gray-600">
@@ -109,6 +126,7 @@ export function UserDashboard() {
 
   return (
     <main className="flex-1 p-0 sm:p-4 space-y-4">
+      
       <StockPortfolio
         stocks={stocks}
         currentPrices={currentPrices}
