@@ -2,19 +2,18 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import StockLineChart from "./stock-linechart-components/stock-line-chart";
 import { StockPortfolio } from "./stock-portfolio-components/stock-portfolio";
 import { Stock } from "@/types/stock";
+import AiStockNews from "@/components/ai-stock-news";
 import {
   getStocks,
   updateStock,
   deleteStock,
   addStock,
   getCurrentPrices,
-} from "@/app/actions";
+} from "@/app/actions/user-actions";
+import { StockProvider } from "@/app/context/stock-context";
 
 export default function UserDashboard() {
   const { data: session, status } = useSession();
@@ -22,10 +21,7 @@ export default function UserDashboard() {
   const [currentPrices, setCurrentPrices] = useState<
     Record<string, { price: number; percentChange: number }>
   >({});
-  const [messages, setMessages] = useState<{ sender: string; text: string }[]>(
-    []
-  );
-  const [input, setInput] = useState("");
+  
 
   const fetchStocks = useCallback(async () => {
     try {
@@ -89,23 +85,7 @@ export default function UserDashboard() {
     }
   };
 
-  const handleSend = () => {
-    if (input.trim()) {
-      setMessages([...messages, { sender: "user", text: input.trim() }]);
-      setInput("");
-      // Simulate AI response
-      setTimeout(() => {
-        setMessages((prev) => [
-          ...prev,
-          {
-            sender: "ai",
-            text: "I'm sorry, but I'm not a real AI assistant. I'm just a simulated response in this example.",
-          },
-        ]);
-      }, 1000);
-    }
-  };
-
+  
   if (status === "loading") {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -125,50 +105,21 @@ export default function UserDashboard() {
   }
 
   return (
-    <main className="flex-1 p-0 sm:p-4 space-y-4">
-      
-      <StockPortfolio
-        stocks={stocks}
-        currentPrices={currentPrices}
-        onAddStock={handleAddStock}
-        onUpdateStock={handleUpdateStock}
-        onDeleteStock={handleDeleteStock}
-      />
-      <div className="flex flex-col md:flex-row gap-6">
-        <StockLineChart />
-        <Card className="flex-1">
-          <CardHeader>
-            <CardTitle>Chat with AI</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="h-[200px] overflow-y-auto space-y-2">
-                {messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`p-2 rounded-lg ${
-                      message.sender === "user"
-                        ? "bg-primary text-primary-foreground ml-auto"
-                        : "bg-muted"
-                    } max-w-[80%] w-fit`}
-                  >
-                    {message.text}
-                  </div>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Type your message..."
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleSend()}
-                />
-                <Button onClick={handleSend}>Send</Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </main>
+    <StockProvider>
+      <main className="flex-1 p-0 sm:p-4 space-y-4">
+        <StockPortfolio
+          stocks={stocks}
+          currentPrices={currentPrices}
+          onAddStock={handleAddStock}
+          onUpdateStock={handleUpdateStock}
+          onDeleteStock={handleDeleteStock}
+        />
+        <div className="flex flex-col md:flex-row gap-6">
+          <StockLineChart />
+
+          <AiStockNews />
+        </div>
+      </main>
+    </StockProvider>
   );
 }

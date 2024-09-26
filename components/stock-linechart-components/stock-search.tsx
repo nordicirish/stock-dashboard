@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { StockListing } from "@/types/stock";
-import { searchStocks } from "@/app/actions";
+import { searchStocks } from "@/app/actions/user-actions";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -10,18 +10,16 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ChevronsUpDown } from "lucide-react";
+import { useStock } from "@/app/context/stock-context";
 
 interface StockSearchProps {
-  onStockSelect: (stock: StockListing | null) => void;
   placeholder?: string;
-  selectedStock: StockListing | null;
 }
 
 export function StockSearch({
-  onStockSelect,
   placeholder = "Search stocks...",
-  selectedStock,
 }: StockSearchProps) {
+  const { selectedStock, setSelectedStock } = useStock();
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [stocks, setStocks] = useState<StockListing[]>([]);
@@ -36,7 +34,7 @@ export function StockSearch({
   }, [selectedStock]);
 
   const handleStockSelect = (stock: StockListing) => {
-    onStockSelect(stock);
+    setSelectedStock(stock);
     setOpen(false);
   };
 

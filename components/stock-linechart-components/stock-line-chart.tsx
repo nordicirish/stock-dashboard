@@ -10,7 +10,7 @@ import {
   YAxis,
 } from "recharts";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { fetchStockData } from "@/app/actions";
+import { fetchStockData } from "@/app/actions/user-actions";
 import { StockSearch } from "./stock-search";
 import { TimeframeSelect } from "./timeframe-select";
 import { StockListing, StockData } from "@/types/stock";
@@ -19,10 +19,11 @@ import {
   formatTimeForXAxis,
   formatDateLabel,
 } from "@/lib/utils";
+import { useStock } from "@/app/context/stock-context";
 
 export default function StockLineChart() {
+  const { selectedStock } = useStock();
   const [selectedTimeframe, setSelectedTimeframe] = useState("1D");
-  const [selectedStock, setSelectedStock] = useState<StockListing | null>(null);
   const [stockData, setStockData] = useState<StockData | null>(null);
   const [isPending, startTransition] = useTransition();
   const [defaultStock] = useState<StockListing>({
@@ -56,10 +57,6 @@ export default function StockLineChart() {
     return () => clearInterval(intervalId);
   }, [updateStockData, selectedTimeframe]);
 
-  const handleStockSelect = (stock: StockListing | null) => {
-    setSelectedStock(stock);
-  };
-
   const handleTimeframeChange = (value: string) => {
     setSelectedTimeframe(value);
   };
@@ -68,11 +65,7 @@ export default function StockLineChart() {
     <Card className="w-full md:w-1/2">
       <CardHeader>
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-          <StockSearch
-            onStockSelect={handleStockSelect}
-            placeholder="Search stocks..."
-            selectedStock={selectedStock}
-          />
+          <StockSearch placeholder="Search stocks..." />
           <TimeframeSelect
             selectedTimeframe={selectedTimeframe}
             onTimeframeChange={handleTimeframeChange}

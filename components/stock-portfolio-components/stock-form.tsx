@@ -8,7 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ChevronsUpDown, Search, DollarSign, Hash } from "lucide-react";
-import { searchStocks } from "@/app/actions";
+import { searchStocks } from "@/app/actions/user-actions";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 
