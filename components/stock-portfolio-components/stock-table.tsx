@@ -18,7 +18,7 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
-import { Stock } from "@/types/stock";
+
 import { useTheme } from "next-themes";
 import { useIsMobile } from "../../hooks/use-mobile";
 import { StockTableProps, SortOrder } from "@/types/stock";
