@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import StockLineChart from "./stock-linechart-components/stock-line-chart";
-import { StockPortfolio } from "./stock-portfolio-components/stock-portfolio";
+import StockLineChart from "./stock-line-chart-components/stock-line-chart";
+import  { StockPortfolio } from "./stock-portfolio-components/stock-portfolio";
 import { Stock } from "@/types/stock";
 import AiStockNews from "@/components/ai-stock-news";
 import {
@@ -16,12 +16,11 @@ import {
 import { StockProvider } from "@/app/context/stock-context";
 
 export default function UserDashboard() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [currentPrices, setCurrentPrices] = useState<
     Record<string, { price: number; percentChange: number }>
   >({});
-  
 
   const fetchStocks = useCallback(async () => {
     try {
@@ -85,7 +84,6 @@ export default function UserDashboard() {
     }
   };
 
-  
   if (status === "loading") {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -106,7 +104,7 @@ export default function UserDashboard() {
 
   return (
     <StockProvider>
-      <main className="flex-1 p-0 sm:p-4 space-y-4">
+      <div className="flex-1 p-0 sm:p-4 space-y-4">
         <StockPortfolio
           stocks={stocks}
           currentPrices={currentPrices}
@@ -114,12 +112,15 @@ export default function UserDashboard() {
           onUpdateStock={handleUpdateStock}
           onDeleteStock={handleDeleteStock}
         />
-        <div className="flex flex-col md:flex-row gap-6">
-          <StockLineChart />
-
-          <AiStockNews />
+        <div className="flex flex-col md:flex-row gap-6 justify-center w-full">
+          <div className="w-full md:w-1/2">
+            <StockLineChart />
+          </div>
+          <div className="w-full md:w-1/2 h-full">
+            <AiStockNews />
+          </div>
         </div>
-      </main>
+      </div>
     </StockProvider>
   );
 }

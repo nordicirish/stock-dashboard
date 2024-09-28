@@ -58,6 +58,12 @@
     --chart-5: 340 75% 55%;
   }
 }
+@layer components {
+  .bg-card {
+    @apply bg-zinc-100/50;
+    @apply dark:bg-zinc-900/70;
+  }
+}
 
 @layer base {
   * {
@@ -66,17 +72,4 @@
   body {
     @apply bg-background text-foreground;
   }
-}
-
-/* Clerk button styles */
-cl-formButtonPrimary {
-  font-size: 14px;
-  text-transform: none;
-  background-color: #611bbd;
-}
-
-.cl-formButtonPrimary:hover,
-.cl-formButtonPrimary:focus,
-.cl-formButtonPrimary:active {
-  background-color: #49247a;
 }
