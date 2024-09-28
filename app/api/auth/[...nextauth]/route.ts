@@ -31,7 +31,7 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
-    //redirects to dashboard if logged in
+    // Redirect to dashboard if logged in
     async redirect() {
       return "/dashboard";
     },
@@ -39,4 +39,5 @@ export const authOptions: NextAuthOptions = {
 };
 
 const handler = NextAuth(authOptions);
+
 export { handler as GET, handler as POST };
