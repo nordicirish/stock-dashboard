@@ -47,7 +47,7 @@ export function StockTable({
 
   return (
     <Table>
-      <TableHeader className="dark:bg-slate-950 bg-slate-50 hover:bg-slate-50 dark:hover:bg-slate-950">
+      <TableHeader className="dark:bg-slate-950/50 bg-slate-200/50">
         <TableRow>
           <TableHead
             className="text-center cursor-pointer"
@@ -108,7 +108,7 @@ export function StockTable({
 
           return (
             <React.Fragment key={stock.id}>
-              <TableRow className="hover:bg-muted/50 dark:bg-slate-700 bg-slate-100">
+              <TableRow className="hover:bg-muted/50 dark:bg-slate-700/50 bg-slate-100/50">
                 <TableCell className="font-medium text-center">
                   {stock.symbol}
                 </TableCell>
