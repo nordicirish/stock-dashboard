@@ -60,7 +60,7 @@
 }
 @layer components {
   .bg-card {
-    @apply bg-zinc-100/50;
+    @apply bg-zinc-100/70;
     @apply dark:bg-zinc-900/70;
   }
 }
