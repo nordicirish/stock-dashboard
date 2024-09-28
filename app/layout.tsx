@@ -6,6 +6,12 @@ import { getServerSession } from "next-auth/next";
 import SessionProvider from "@/components/session-provider";
 import { authOptions } from "./api/auth/[...nextauth]/route";
 import NavMenu from "@/components/nav-menu";
+import { Inter } from "@next/font/google";
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+});
 
 export const metadata: Metadata = {
   title: "Stock Market Dashboard",
@@ -22,13 +28,7 @@ export default async function RootLayout({
   return (
     <ThemeContextProvider>
       <SessionProvider session={session}>
-        <html lang="en">
-          <Head>
-            <link
-              href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
-              rel="stylesheet"
-            />
-          </Head>
+        <html lang="en" className={inter.className}>
           <body
             className="antialiased flex flex-col w-full min-h-screen justify-start items-center bg-gradient-to-b from-blue-200 via-blue-300 to-gray-100
             dark:bg-gradient-to-b dark:from-indigo-800 dark:via-indigo-900 dark:to-indigo-950 
