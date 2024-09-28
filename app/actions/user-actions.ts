@@ -5,6 +5,10 @@ import { prisma } from "@/lib/prisma";
 // Helper function to get the current user ID from NextAuth server and negates the need to pass it in as a parameter on the client
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+// Search stocks based on query string. Stock symbols and names can be cached as they are not updated frequently
+const searchCache: Record<string, { data: StockListing[]; timestamp: number }> =
+  {};
+
 async function getCurrentUserId(): Promise<string> {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
@@ -60,29 +64,31 @@ export async function fetchStockData(
   };
 }
 
-// Search stocks based on query
 export async function searchStocks(query: string): Promise<StockListing[]> {
+  const now = Date.now();
+
+  if (searchCache[query] && now - searchCache[query].timestamp < 300 * 1000) {
+    // Use cached result if it's less than 5 minutes old
+    return searchCache[query].data;
+  }
+
   const url = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(
     query
-  )}&quotesCount=10&newsCount=0&enableFuzzyQuery=false&quotesQueryId=tss_match_phrase_query`;
-
+  )}`;
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error("Failed to fetch stock listings");
   }
 
   const data = await response.json();
-
-  if (!data.quotes) {
-    return [];
-  }
-
-  return data.quotes.map((quote: YahooQuote) => ({
+  const results = data.quotes.map((quote: YahooQuote) => ({
     symbol: quote.symbol,
     name: quote.shortname || quote.longname || quote.symbol,
   }));
-}
 
+  searchCache[query] = { data: results, timestamp: now };
+  return results;
+}
 // Add or update a stock for the current user
 export async function addStock(
   stockData: Omit<Stock, "id" | "createdAt" | "updatedAt">
