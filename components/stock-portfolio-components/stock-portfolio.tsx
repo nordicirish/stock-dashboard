@@ -1,15 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useTransition } from "react";
 import { Plus } from "lucide-react";
 import { Stock } from "@/types/stock";
 import { StockPieChart } from "./stock-pie-chart";
 import { StockTable } from "./stock-table";
 import { StockFormModal } from "./stock-form-modal";
+import { Loader2 } from "lucide-react";
 
 interface StockPortfolioProps {
   stocks: Stock[];
-
   currentPrices: Record<string, { price: number; percentChange: number }>;
   onAddStock: (stock: Omit<Stock, "id">) => Promise<void>;
   onUpdateStock: (stock: Stock) => Promise<void>;
@@ -26,47 +26,61 @@ export function StockPortfolio({
   const [editingStock, setEditingStock] = useState<Stock | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-// useMemo is used to create an array of colors based on the number of stocks only recalculating when the stocks array changes
+  const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(true); // for data fetching
+
   const COLORS = useMemo(() => {
-  return Array.from(
-    { length: stocks.length },
-    (_, i) => `hsl(${i * 50}, 40%, 50%)`
-  );
-}, [stocks.length]);
+    return Array.from(
+      { length: stocks.length },
+      (_, i) => `hsl(${i * 50}, 40%, 50%)`
+    );
+  }, [stocks.length]);
 
+  // Simulating data fetching
   useEffect(() => {
-    if (Object.keys(currentPrices).length > 0) {
-      setError(null);
-    }
-  }, [currentPrices]);
-
-  const handleAddStock = async (stock: Omit<Stock, "id" | "createdAt" | "updatedAt">) => {
-    setIsLoading(true);
-    try {
-      await onAddStock(stock);
-      setShowModal(false);
-    } catch (error) {
-      console.error("Error adding stock:", error);
-      setError("Failed to add stock. Please try again.");
-    } finally {
+    const fetchData = async () => {
+      // Your data fetching logic here...
+      // After fetching, set isLoading to false
       setIsLoading(false);
-    }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleAddStock = async (
+    stock: Omit<Stock, "id" | "createdAt" | "updatedAt">
+  ) => {
+    startTransition(async () => {
+      try {
+        await onAddStock(stock);
+        setShowModal(false);
+      } catch (error) {
+        console.error("Error adding stock:", error);
+        setError("Failed to add stock. Please try again.");
+      }
+    });
   };
 
   const handleUpdateStock = async (stock: Stock) => {
-    setIsLoading(true);
-    try {
-      await onUpdateStock(stock);
-      setShowModal(false);
-      setEditingStock(null);
-    } catch (error) {
-      console.error("Error updating stock:", error);
-      setError("Failed to update stock. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+    startTransition(async () => {
+      try {
+        await onUpdateStock(stock);
+        setShowModal(false);
+        setEditingStock(null);
+      } catch (error) {
+        console.error("Error updating stock:", error);
+        setError("Failed to update stock. Please try again.");
+      }
+    });
   };
+
+  if (isPending || isLoading) {
+    return (
+      <div className="flex justify-center items-center h-[400px]">
+        <Loader2 className="h-12 w-12 animate-spin" />
+      </div>
+    );
+  }
 
   const handleOpenModal = () => {
     setEditingStock(null);
@@ -80,7 +94,7 @@ export function StockPortfolio({
 
   const renderModal = () => {
     if (!showModal) return null;
-    
+
     return (
       <StockFormModal
         existingStock={editingStock || undefined}
@@ -92,7 +106,7 @@ export function StockPortfolio({
           }
         }}
         onCancel={handleCloseModal}
-        isLoading={isLoading}
+        isPending={isPending}
       />
     );
   };
@@ -135,7 +149,12 @@ export function StockPortfolio({
             {error}
           </div>
         )}
-        <StockPieChart stocks={stocks} currentPrices={currentPrices} COLORS={COLORS}/>
+        <StockPieChart
+          stocks={stocks}
+          currentPrices={currentPrices}
+          COLORS={COLORS}
+          isPending={isPending}
+        />
         <StockTable
           stocks={stocks}
           currentPrices={currentPrices}
