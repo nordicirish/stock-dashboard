@@ -32,7 +32,7 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     //redirects to dashboard if logged in
-    async redirect({ url, baseUrl }) {
+    async redirect() {
       return "/dashboard";
     },
   },
