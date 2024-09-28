@@ -12,15 +12,11 @@ export const metadata: Metadata = {
   description: "Track and manage your stock portfolio",
 };
 
-// need to async as awaiting promise from getServerSession
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // const cookieStore = cookies();
-  // const sidebarOpen = cookieStore.get("sidebar:state")?.value === "true";
-  // // need to get session here to check if user is logged in
   const session = await getServerSession(authOptions);
 
   return (
@@ -38,18 +34,19 @@ export default async function RootLayout({
             dark:bg-gradient-to-b dark:from-indigo-800 dark:via-indigo-900 dark:to-indigo-950 
              text-gray-900 dark:text-gray-100"
           >
-            <header className="flex items-center justify-between px-12 py-4 w-full flex-col md:flex-row max-w-[72rem]">
-              <div className="flex-1 flex justify-start items-center">
+            <header className="flex flex-col md:flex-row items-center justify-between px-4 md:px-12 py-2 mt-2 mb-4 h-24 md:h-14 w-full max-w-[72rem] bg-zinc-100/90 dark:bg-zinc-900/70 rounded-md">
+              <div className="w-full md:w-auto flex items-center justify-center md:justify-start h-full">
                 <h1 className="text-lg md:text-xl font-bold">
                   {session?.user?.name ? `${session.user.name}'s ` : ""}
                   Stock Dashboard
                 </h1>
               </div>
-              <div className="flex-1 flex justify-center items-center">
+              <div className="w-full md:w-auto flex items-center justify-center md:justify-end h-full">
                 <NavMenu />
               </div>
             </header>
-            <main className="mx-auto w-full text-2xl flex gap-2  flex-col justify-center items-center h-full max-w-[72rem]">
+
+            <main className="mx-auto w-full text-2xl flex gap-2 flex-col justify-center items-center h-full max-w-[72rem]">
               {children}
             </main>
           </body>

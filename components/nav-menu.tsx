@@ -8,30 +8,32 @@ import ThemeToggle from "./theme-toggle";
 export default function NavMenu() {
   const pathName = usePathname();
   const { data: session } = useSession();
+
   const linkStyle =
-    "py-1 px-2 text-gray-500 dark:text-gray-300 hover:text-gray-300 dark:hover:text-gray-100 hover:bg-gray-700 dark:hover:bg-gray-900 hover:scale-[1.15] active:scale-105 rounded-md transition-all";
+    "flex justify-center items-center gap-4 py-1 px-2 text-gray-900 dark:text-gray-300 bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-900 hover:scale-[1.15] active:scale-105 rounded-md transition-all";
+
+  const activeStyle =
+    "bg-zinc-300 dark:bg-gray-900 text-gray-800 dark:text-gray-100";
+
+  // Separate style for SignIn and SignOut buttons
+  const buttonStyle =
+    "flex justify-center items-center py-1 px-2 text-white rounded-md transition-all";
 
   return (
-    <nav className="flex justify-center items-center gap-4 mt-2 md:mt-0">
+    <nav className="flex flex-1 justify-center items-center gap-4">
       {session && (
         <ul className="flex gap-4">
-          <Link href="/">
+          <Link href="/" passHref>
             <li
-              className={`${linkStyle} ${
-                pathName === "/dashboard"
-                  ? "bg-zinc-700 text-gray-100 dark:bg-zinc-900 dark:text-gray-100"
-                  : ""
-              }`}
+              className={`${linkStyle} ${pathName === "/" ? activeStyle : ""}`}
             >
               Home
             </li>
           </Link>
-          <Link href="/dashboard">
+          <Link href="/dashboard" passHref>
             <li
               className={`${linkStyle} ${
-                pathName === "/dashboard"
-                  ? "bg-zinc-700 text-gray-100 dark:bg-zinc-900 dark:text-gray-100"
-                  : ""
+                pathName === "/dashboard" ? activeStyle : ""
               }`}
             >
               Dashboard
@@ -41,21 +43,22 @@ export default function NavMenu() {
       )}
       {session ? (
         <button
-          // signOut() removes the cookie to end the session
           onClick={() => signOut()}
-          className={`${linkStyle} bg-red-700 text-white hover:bg-red-800 active:bg-red-900`}
+          className={`${buttonStyle} bg-red-700 hover:bg-red-800 active:bg-red-900`}
         >
           Sign Out
         </button>
       ) : (
         <button
           onClick={() => signIn()}
-          className={`${linkStyle} bg-green-700 text-white hover:bg-green-800 active:bg-green-900`}
+          className={`${buttonStyle} bg-green-700 hover:bg-green-800 active:bg-green-900`}
         >
           Sign In
         </button>
       )}
-      <ThemeToggle />
+      <div className="flex items-center">
+        <ThemeToggle />
+      </div>
     </nav>
   );
 }
