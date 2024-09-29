@@ -17,32 +17,34 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user, account }) {
-      console.log("Token:", token);
       if (user) {
         token.id = user.id;
       }
       if (account) {
         token.accessToken = account.access_token;
       }
-      console.log("Updated Token:", token);
       return token;
     },
     async session({ session, token }) {
-      console.log("Session:", session);
-      console.log("Token:", token);
-      session.user.id = token.id;
+      if (session.user) {
+        session.user.id = token.id as string;
+      }
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      // Always redirect to the home page after sign out
+      if (url.includes("/signout")) {
+        return baseUrl;
+      }
+      // Redirect to dashboard after sign in
+      if (url === baseUrl) {
+        return `${baseUrl}/dashboard`;
+      }
+      // Allow all other URLs
+      return url;
+    },
   },
-  logger: {
-    error: (code: string, metadata: any) => {
-      console.error(code, metadata);
-    },
-    warn: (code: string) => {
-      console.warn(code);
-    },
-    debug: (code: string, metadata: any) => {
-      console.log(code, metadata);
-    },
+  pages: {
+    signOut: "/auth/signout",
   },
 };
