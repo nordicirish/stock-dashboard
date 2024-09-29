@@ -32,16 +32,15 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async redirect({ url, baseUrl }) {
-      // Always redirect to the home page after sign out
-      if (url.includes("/signout")) {
-        return baseUrl;
+      if (url === `${baseUrl}/auth/signout`) {
+        return baseUrl; // Redirect to home page after sign out
       }
       // Redirect to dashboard after sign in
-      if (url === baseUrl) {
+      if (url === baseUrl || url === `${baseUrl}/`) {
         return `${baseUrl}/dashboard`;
       }
       // Allow all other URLs
-      return url;
+      return url.startsWith(baseUrl) ? url : baseUrl;
     },
   },
   pages: {
