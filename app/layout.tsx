@@ -3,7 +3,7 @@ import "./globals.css";
 import ThemeContextProvider from "@/context/theme-switch";
 import { getServerSession } from "next-auth/next";
 import SessionProvider from "@/components/session-provider";
-import { authOptions } from "./api/auth/[...nextauth]/route";
+import { authOptions } from "./api/auth/[...nextauth]/options";
 import NavMenu from "@/components/nav-menu";
 import { Inter } from "next/font/google";
 

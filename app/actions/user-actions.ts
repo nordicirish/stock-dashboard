@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 // Helper function to get the current user ID from NextAuth server and negates the need to pass it in as a parameter on the client
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 // Search stocks based on query string. Stock symbols and names can be cached as they are not updated frequently
 const searchCache: Record<string, { data: StockListing[]; timestamp: number }> =
   {};
