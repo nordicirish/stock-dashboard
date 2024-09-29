@@ -27,7 +27,7 @@ export function StockPortfolio({
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [isLoading, setIsLoading] = useState(true); // for data fetching
+ 
 
   const COLORS = useMemo(() => {
     return Array.from(
@@ -36,14 +36,7 @@ export function StockPortfolio({
     );
   }, [stocks.length]);
 
-  // Update loading state based on stocks and currentPrices props
-  useEffect(() => {
-    if (stocks.length > 0 && Object.keys(currentPrices).length > 0) {
-      setIsLoading(false);
-    } else {
-      setIsLoading(true);
-    }
-  }, [stocks, currentPrices]);
+  
 
   const handleAddStock = async (
     stock: Omit<Stock, "id" | "createdAt" | "updatedAt">
@@ -101,7 +94,7 @@ export function StockPortfolio({
     );
   };
 
-  if (isLoading || isPending) {
+  if (isPending) {
     return (
       <div className="flex justify-center items-center h-[400px]">
         <Loader2 className="h-12 w-12 animate-spin" />
@@ -109,7 +102,7 @@ export function StockPortfolio({
     );
   }
 
-  if (!isPending && !isLoading && stocks.length === 0) {
+  if (!isPending && stocks.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -133,7 +126,7 @@ export function StockPortfolio({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Stock Portfolio</CardTitle>
-        {!isPending && !isLoading && stocks.length > 0 && (
+        {!isPending  && stocks.length > 0 && (
           <Button
             onClick={handleOpenModal}
             variant="default"
