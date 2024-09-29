@@ -44,14 +44,14 @@ export default function NavMenu() {
       {session ? (
         <button
           onClick={() => signOut()}
-          className={`${buttonStyle} bg-red-700 hover:bg-red-800 active:bg-red-900`}
+          className={`${buttonStyle} bg-red-700 hover:bg-red-800 active:bg-red-900 hover:scale-[1.15] active:scale-105`}
         >
           Sign Out
         </button>
       ) : (
         <button
           onClick={() => signIn()}
-          className={`${buttonStyle} bg-green-700 hover:bg-green-800 active:bg-green-900`}
+          className={`${buttonStyle} bg-green-700 hover:bg-green-800 active:bg-green-900 hover:scale-[1.15] active:scale-105`}
         >
           Sign In
         </button>
