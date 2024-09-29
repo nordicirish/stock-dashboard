@@ -31,13 +31,12 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
-    // Redirect to dashboard if logged in
+    //redirects to dashboard if logged in
     async redirect() {
-      return "/dashboard";
-    },
+  return "/dashboard";
+}
   },
 };
 
 const handler = NextAuth(authOptions);
-
 export { handler as GET, handler as POST };
