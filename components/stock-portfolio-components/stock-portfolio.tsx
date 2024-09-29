@@ -36,16 +36,14 @@ export function StockPortfolio({
     );
   }, [stocks.length]);
 
-  // Simulating data fetching
+  // Update loading state based on stocks and currentPrices props
   useEffect(() => {
-    const fetchData = async () => {
-      // Your data fetching logic here...
-      // After fetching, set isLoading to false
+    if (stocks.length > 0 && Object.keys(currentPrices).length > 0) {
       setIsLoading(false);
-    };
-
-    fetchData();
-  }, []);
+    } else {
+      setIsLoading(true);
+    }
+  }, [stocks, currentPrices]);
 
   const handleAddStock = async (
     stock: Omit<Stock, "id" | "createdAt" | "updatedAt">
@@ -73,14 +71,6 @@ export function StockPortfolio({
       }
     });
   };
-
-  if (isPending || isLoading) {
-    return (
-      <div className="flex justify-center items-center h-[400px]">
-        <Loader2 className="h-12 w-12 animate-spin" />
-      </div>
-    );
-  }
 
   const handleOpenModal = () => {
     setEditingStock(null);
@@ -111,7 +101,15 @@ export function StockPortfolio({
     );
   };
 
-  if (stocks.length === 0) {
+  if (isLoading || isPending) {
+    return (
+      <div className="flex justify-center items-center h-[400px]">
+        <Loader2 className="h-12 w-12 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isPending && !isLoading && stocks.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -135,13 +133,15 @@ export function StockPortfolio({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Stock Portfolio</CardTitle>
-        <Button
-          onClick={handleOpenModal}
-          variant="default"
-          className="flex items-center bg-blue-500 hover:bg-blue-600 text-white"
-        >
-          <Plus className="h-4 w-4 mr-2" /> Add Stock
-        </Button>
+        {!isPending && !isLoading && stocks.length > 0 && (
+          <Button
+            onClick={handleOpenModal}
+            variant="default"
+            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white"
+          >
+            <Plus className="h-4 w-4 mr-2" /> Add Stock
+          </Button>
+        )}
       </CardHeader>
       <CardContent>
         {error && (
