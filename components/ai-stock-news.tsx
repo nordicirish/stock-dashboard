@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { getStockAnalysis } from "@/app/actions/openai-actions";
-import { useStock } from "@/app/context/stock-context";
+import { useStock } from "@/context/stock-context";
 import { getLatestNews } from "@/app/actions/newsapi-actions"; // Import the server action
 
 export default function AiStockNews() {

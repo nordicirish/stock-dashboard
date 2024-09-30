@@ -10,7 +10,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ChevronsUpDown } from "lucide-react";
-import { useStock } from "@/app/context/stock-context";
+import { useStock } from "@/context/stock-context";
 
 interface StockSearchProps {
   placeholder?: string;

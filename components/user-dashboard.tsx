@@ -13,7 +13,7 @@ import {
   addStock,
   getCurrentPrices,
 } from "@/app/actions/user-actions";
-import { StockProvider } from "@/app/context/stock-context";
+import { StockProvider } from "@/context/stock-context";
 
 export default function UserDashboard() {
   const { status } = useSession();

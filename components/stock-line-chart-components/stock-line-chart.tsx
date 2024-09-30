@@ -19,7 +19,7 @@ import {
   formatTimeForXAxis,
   formatDateLabel,
 } from "@/lib/utils";
-import { useStock } from "@/app/context/stock-context";
+import { useStock } from "@/context/stock-context";
 import { Loader2 } from "lucide-react";
 
 export default function StockLineChart() {
