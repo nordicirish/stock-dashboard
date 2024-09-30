@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useTransition } from "react";
 import { useSession } from "next-auth/react";
 import StockLineChart from "./stock-line-chart-components/stock-line-chart";
-import  { StockPortfolio } from "./stock-portfolio-components/stock-portfolio";
+import { StockPortfolio } from "./stock-portfolio-components/stock-portfolio";
 import { Stock } from "@/types/stock";
 import AiStockNews from "@/components/ai-stock-news";
 import {
@@ -21,14 +21,20 @@ export default function UserDashboard() {
   const [currentPrices, setCurrentPrices] = useState<
     Record<string, { price: number; percentChange: number }>
   >({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   const fetchStocks = useCallback(async () => {
+    setIsLoading(true);
     try {
       const fetchedStocks = await getStocks();
       setStocks(fetchedStocks);
       return fetchedStocks;
     } catch (error) {
       console.error("Error fetching stocks:", error);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -74,23 +80,14 @@ export default function UserDashboard() {
       console.error("Error updating stock:", error);
     }
   };
-
   const handleDeleteStock = async (stockId: number) => {
     try {
       await deleteStock(stockId);
       await refreshData();
     } catch (error) {
-      console.error("Error deleting stock:", error);
+      setError("Error deleting stock");
     }
   };
-
-  if (status === "loading") {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-lg font-medium text-gray-600">Loading...</p>
-      </div>
-    );
-  }
 
   if (status === "unauthenticated") {
     return (
@@ -111,6 +108,9 @@ export default function UserDashboard() {
           onAddStock={handleAddStock}
           onUpdateStock={handleUpdateStock}
           onDeleteStock={handleDeleteStock}
+          isLoading={isLoading}
+          isPending={isPending}
+          error={error} // pass error prop down
         />
         <div className="flex flex-col md:flex-row gap-6 justify-center w-full">
           <div className="w-full md:w-1/2">

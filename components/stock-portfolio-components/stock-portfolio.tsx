@@ -1,20 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect, useMemo, useTransition } from "react";
+import { useState, useMemo } from "react";
 import { Plus } from "lucide-react";
 import { Stock } from "@/types/stock";
 import { StockPieChart } from "./stock-pie-chart";
 import { StockTable } from "./stock-table";
 import { StockFormModal } from "./stock-form-modal";
+import { StockPortfolioProps } from "@/types/stock";
 import { Loader2 } from "lucide-react";
-
-interface StockPortfolioProps {
-  stocks: Stock[];
-  currentPrices: Record<string, { price: number; percentChange: number }>;
-  onAddStock: (stock: Omit<Stock, "id">) => Promise<void>;
-  onUpdateStock: (stock: Stock) => Promise<void>;
-  onDeleteStock: (stockId: number) => Promise<void>;
-}
 
 export function StockPortfolio({
   stocks,
@@ -22,12 +15,12 @@ export function StockPortfolio({
   onAddStock,
   onUpdateStock,
   onDeleteStock,
+  isLoading,
+  isPending,
+  error, // Receive error state as a prop
 }: StockPortfolioProps) {
   const [editingStock, setEditingStock] = useState<Stock | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
- 
 
   const COLORS = useMemo(() => {
     return Array.from(
@@ -36,33 +29,25 @@ export function StockPortfolio({
     );
   }, [stocks.length]);
 
-  
-
   const handleAddStock = async (
     stock: Omit<Stock, "id" | "createdAt" | "updatedAt">
   ) => {
-    startTransition(async () => {
-      try {
-        await onAddStock(stock);
-        setShowModal(false);
-      } catch (error) {
-        console.error("Error adding stock:", error);
-        setError("Failed to add stock. Please try again.");
-      }
-    });
+    try {
+      await onAddStock(stock);
+      setShowModal(false);
+    } catch (error) {
+      console.error("Error adding stock:", error);
+    }
   };
 
   const handleUpdateStock = async (stock: Stock) => {
-    startTransition(async () => {
-      try {
-        await onUpdateStock(stock);
-        setShowModal(false);
-        setEditingStock(null);
-      } catch (error) {
-        console.error("Error updating stock:", error);
-        setError("Failed to update stock. Please try again.");
-      }
-    });
+    try {
+      await onUpdateStock(stock);
+      setShowModal(false);
+      setEditingStock(null);
+    } catch (error) {
+      console.error("Error updating stock:", error);
+    }
   };
 
   const handleOpenModal = () => {
@@ -89,20 +74,22 @@ export function StockPortfolio({
           }
         }}
         onCancel={handleCloseModal}
-        isPending={isPending}
+        isPending={isPending} // Pass isPending for the modal to handle loading state
       />
     );
   };
-
-  if (isPending) {
+  if (isLoading || isPending) {
     return (
-      <div className="flex justify-center items-center h-[400px]">
+      <div className="flex items-center flex-col justify-center h-screen">
         <Loader2 className="h-12 w-12 animate-spin" />
+        <p className="text-lg font-medium text-gray-800 mt-4">
+          {isPending ? "Updating..." : "Loading your stock data..."}
+        </p>
       </div>
     );
   }
 
-  if (!isPending && stocks.length === 0) {
+  if (!isPending && !isLoading && stocks.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -126,7 +113,7 @@ export function StockPortfolio({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Stock Portfolio</CardTitle>
-        {!isPending  && stocks.length > 0 && (
+        {!isPending && stocks.length > 0 && (
           <Button
             onClick={handleOpenModal}
             variant="default"
@@ -151,11 +138,12 @@ export function StockPortfolio({
         <StockTable
           stocks={stocks}
           currentPrices={currentPrices}
-          onEdit={(stock) => {
+          onEditStock={(stock) => {
             setEditingStock(stock);
             setShowModal(true);
           }}
-          onDelete={onDeleteStock}
+          onDeleteStock={onDeleteStock}
+          isLoading={isLoading}
         />
         {renderModal()}
       </CardContent>

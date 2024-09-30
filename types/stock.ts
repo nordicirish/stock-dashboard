@@ -32,11 +32,25 @@ export interface YahooQuote {
   exchange: string;
 }
 
+export interface StockPortfolioProps {
+  stocks: Stock[];
+  currentPrices: Record<string, { price: number; percentChange: number }>;
+  isPending: boolean;
+  isLoading: boolean;
+  onAddStock: (stock: Omit<Stock, "id">) => Promise<void>;
+  onUpdateStock: (stock: Stock) => Promise<void>;
+  onDeleteStock: (stockId: number) => Promise<void>;
+  error: string | null; // Receive error state as a prop
+}
+
 export interface StockTableProps {
   stocks: Stock[];
   currentPrices: Record<string, { price: number; percentChange: number }>;
-  onEdit: (stock: Stock) => void;
-  onDelete: (stockId: number) => void;
+  onEditStock: (stock: Stock) => void;
+  onDeleteStock: (stockId: number) => void;
+  isLoading: boolean;
+ 
+
 }
 
 export type SortOrder = "asc" | "desc";

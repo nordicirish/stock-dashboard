@@ -26,8 +26,8 @@ import { StockTableProps, SortOrder } from "@/types/stock";
 export function StockTable({
   stocks,
   currentPrices,
-  onEdit,
-  onDelete,
+  onEditStock,
+  onDeleteStock,
 }: StockTableProps) {
   const { theme } = useTheme();
   const isMobile = useIsMobile();
@@ -161,7 +161,7 @@ export function StockTable({
                 <TableCell className="text-center">
                   <div className="flex justify-center space-x-2">
                     <Button
-                      onClick={() => onEdit(stock)}
+                      onClick={() => onEditStock(stock)}
                       variant="ghost"
                       size="sm"
                       className="h-8 w-8 p-0"
@@ -169,7 +169,7 @@ export function StockTable({
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button
-                      onClick={() => onDelete(stock.id!)}
+                      onClick={() => onDeleteStock(stock.id!)}
                       variant="ghost"
                       size="sm"
                       className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
