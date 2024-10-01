@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Stock, StockListing } from "@/types/stock";
@@ -11,6 +12,7 @@ import { ChevronsUpDown, Search, DollarSign, Hash } from "lucide-react";
 import { searchStocks } from "@/app/actions/user-actions";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import  { stockFormSchema } from "@/types/zod-types";
 
 interface StockFormProps {
   existingStock?: Stock;
@@ -19,26 +21,54 @@ interface StockFormProps {
   isPending: boolean;
 }
 
+type StockFormData = z.infer<typeof stockFormSchema>;
+
 export function StockForm({
   existingStock,
   onSubmit,
   onCancel,
   isPending,
 }: StockFormProps) {
-  const [selectedStock, setSelectedStock] = useState<StockListing | null>(
-    existingStock
-      ? { symbol: existingStock.symbol, name: existingStock.name }
-      : null
-  );
-  const [quantity, setQuantity] = useState(
-    existingStock?.quantity.toString() || ""
-  );
-  const [avgPrice, setAvgPrice] = useState(
-    existingStock?.avgPrice.toString() || ""
-  );
+  const [formData, setFormData] = useState<StockFormData>({
+    symbol: existingStock?.symbol || "",
+    name: existingStock?.name || "",
+    quantity: existingStock?.quantity || 0,
+    avgPrice: existingStock?.avgPrice || 0,
+  });
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof StockFormData, string>>
+  >({});
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [stocks, setStocks] = useState<StockListing[]>([]);
+
+  const validateField = useCallback(
+    (field: keyof StockFormData, value: string | number) => {
+      try {
+        stockFormSchema.shape[field].parse(value);
+        setErrors((prev) => ({ ...prev, [field]: undefined }));
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          setErrors((prev) => ({ ...prev, [field]: error.errors[0].message }));
+        }
+      }
+    },
+    []
+  );
+
+  const handleInputChange = useCallback(
+    (field: keyof StockFormData, value: string | number) => {
+      let parsedValue: string | number = value;
+      if (field === "quantity") {
+        parsedValue = parseInt(value as string, 10);
+      } else if (field === "avgPrice") {
+        parsedValue = parseFloat(value as string);
+      }
+      setFormData((prev) => ({ ...prev, [field]: parsedValue }));
+      validateField(field, parsedValue);
+    },
+    [validateField]
+  );
 
   const handleSearch = useCallback((value: string) => {
     setSearchValue(value);
@@ -58,16 +88,34 @@ export function StockForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedStock) {
+    try {
+      const validatedData = stockFormSchema.parse(formData);
       onSubmit({
-        symbol: selectedStock.symbol,
-        name: selectedStock.name,
-        quantity: Number(quantity),
-        avgPrice: Number(avgPrice),
+        ...validatedData,
         userId: existingStock?.userId || "testuser123",
       });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const newErrors: Partial<Record<keyof StockFormData, string>> = {};
+        error.errors.forEach((err) => {
+          if (err.path[0]) {
+            newErrors[err.path[0] as keyof StockFormData] = err.message;
+          }
+        });
+        setErrors(newErrors);
+      }
     }
   };
+
+  useEffect(() => {
+    // Validate all fields on mount and when existingStock changes
+    Object.keys(formData).forEach((key) => {
+      validateField(
+        key as keyof StockFormData,
+        formData[key as keyof StockFormData]
+      );
+    });
+  }, [existingStock, validateField, formData]);
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -89,8 +137,8 @@ export function StockForm({
                     aria-expanded={open}
                     className="w-full justify-between"
                   >
-                    {selectedStock
-                      ? `${selectedStock.symbol} - ${selectedStock.name}`
+                    {formData.symbol
+                      ? `${formData.symbol} - ${formData.name}`
                       : "Search stocks..."}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
@@ -113,7 +161,8 @@ export function StockForm({
                             key={stock.symbol}
                             className="cursor-pointer p-2 hover:bg-accent text-foreground"
                             onClick={() => {
-                              setSelectedStock(stock);
+                              handleInputChange("symbol", stock.symbol);
+                              handleInputChange("name", stock.name);
                               setOpen(false);
                             }}
                           >
@@ -132,6 +181,9 @@ export function StockForm({
                 </PopoverContent>
               </Popover>
             )}
+            {errors.symbol && (
+              <p className="text-sm text-red-500">{errors.symbol}</p>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -142,12 +194,16 @@ export function StockForm({
                   id="quantity"
                   type="number"
                   placeholder="Enter quantity"
-                  value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
-                  required
+                  value={formData.quantity}
+                  onChange={(e) =>
+                    handleInputChange("quantity", e.target.value)
+                  }
                   className="pl-10"
                 />
               </div>
+              {errors.quantity && (
+                <p className="text-sm text-red-500">{errors.quantity}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="avgPrice">Average Price</Label>
@@ -158,12 +214,16 @@ export function StockForm({
                   type="number"
                   step="0.01"
                   placeholder="Enter price"
-                  value={avgPrice}
-                  onChange={(e) => setAvgPrice(e.target.value)}
-                  required
+                  value={formData.avgPrice}
+                  onChange={(e) =>
+                    handleInputChange("avgPrice", e.target.value)
+                  }
                   className="pl-10"
                 />
               </div>
+              {errors.avgPrice && (
+                <p className="text-sm text-red-500">{errors.avgPrice}</p>
+              )}
             </div>
           </div>
           <div className="flex justify-end space-x-2 mt-6">
