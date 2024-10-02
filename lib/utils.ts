@@ -100,3 +100,41 @@ export function formatDateLabel(timestamp: number, timezone: string): string {
   return new Intl.DateTimeFormat('en-US', options).format(date);
 }
 
+export function formatCurrency(
+  value: number,
+  minimumFractionDigits = 2,
+  maximumFractionDigits = 2
+): string {
+  return value.toLocaleString(undefined, {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits,
+    maximumFractionDigits,
+  });
+}
+
+export function calculatePercentChange(
+  oldValue: number,
+  newValue: number
+): number {
+  return ((newValue - oldValue) / oldValue) * 100;
+}
+export function getTrend(value: number): "up" | "down" | "neutral" {
+  if (value > 0) return "up";
+  if (value < 0) return "down";
+  return "neutral";
+}
+export function getTrendColorClass(
+  trend: "up" | "down" | "neutral",
+  theme: string
+): string {
+  if (trend === "up")
+    return theme === "dark" ? "text-green-400" : "text-green-600";
+  if (trend === "down")
+    return theme === "dark" ? "text-red-400" : "text-red-600";
+  return "";
+}
+export function parseInputValue(value: string, type: "int" | "float"): number {
+  if (type === "int") return parseInt(value, 10);
+  return parseFloat(value);
+}
