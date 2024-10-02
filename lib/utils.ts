@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { StockListing } from "@/types/stock";
+import { StockListing, Stock } from "@/types/stock";
 
 const timezoneMap: { [key: string]: string } = {
   EDT: "America/New_York",
@@ -155,4 +155,25 @@ export function getDefaultStock(): StockListing {
     symbol: "^GSPC",
     name: "S&P 500",
   };
+}
+
+export function calculateTotalPortfolioValue(
+  stocks: Stock[],
+  currentPrices: Record<string, { price: number }>
+): number {
+  return stocks.reduce((total, stock) => {
+    const currentPrice = currentPrices[stock.symbol]?.price || stock.avgPrice;
+    return total + stock.quantity * currentPrice;
+  }, 0);
+}
+
+export function calculateTotalPortfolioGain(
+  stocks: Stock[],
+  currentPrices: Record<string, { price: number }>
+): number {
+  return stocks.reduce((total, stock) => {
+    const currentPrice = currentPrices[stock.symbol]?.price || stock.avgPrice;
+    const gain = (currentPrice - stock.avgPrice) * stock.quantity;
+    return total + gain;
+  }, 0);
 }
