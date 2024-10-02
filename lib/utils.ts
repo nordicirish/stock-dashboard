@@ -138,3 +138,11 @@ export function parseInputValue(value: string, type: "int" | "float"): number {
   if (type === "int") return parseInt(value, 10);
   return parseFloat(value);
 }
+export function getTimeframeOptions() {
+  return [
+    { value: "1D", label: "1 Day" },
+    { value: "5D", label: "5 Days" },
+    { value: "1M", label: "1 Month" },
+    { value: "1Y", label: "1 Year" },
+  ];
+}
