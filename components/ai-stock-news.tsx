@@ -6,9 +6,12 @@ import { Loader2 } from "lucide-react";
 import { getStockAnalysis } from "@/app/actions/openai-actions";
 import { useStock } from "@/context/stock-context";
 import { getLatestNews } from "@/app/actions/newsapi-actions"; // Import the server action
+import { getDefaultStock } from "@/lib/utils";
 
 export default function AiStockNews() {
   const { selectedStock } = useStock(); // Use selected stock from context
+  const stock = selectedStock || getDefaultStock(); // Use default stock if none selected
+
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [latestNews, setLatestNews] = useState<
     { title: string; url: string }[]
@@ -19,6 +22,7 @@ export default function AiStockNews() {
     async function fetchStockData(stockSymbol: string) {
       try {
         setIsLoading(true);
+        // use promises to fetch stock data in parallel for better UX
         const [analysis, news] = await Promise.all([
           getStockAnalysis(stockSymbol), // Unified stock analysis function
           getLatestNews(stockSymbol), // Fetch latest news from the server action
@@ -32,22 +36,14 @@ export default function AiStockNews() {
       }
     }
 
-    if (selectedStock) {
-      fetchStockData(selectedStock.symbol);
-    } else {
-      fetchStockData(""); // Fetch default stock (S&P 500)
-    }
-  }, [selectedStock]);
+    fetchStockData(stock.symbol);
+  }, [stock.symbol]);
 
   return (
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>
-            {selectedStock
-              ? `${selectedStock.symbol} - ${selectedStock.name}`
-              : "S&P 500 Index"}
-          </CardTitle>
+          <CardTitle>{`${stock.symbol} - ${stock.name}`}</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -58,7 +54,6 @@ export default function AiStockNews() {
             <>
               <div className="mb-4">
                 <h3 className="text-lg font-semibold mb-2">AI Analysis</h3>
-                {/* space-y-2 adds some vertical spacing to children */}
                 <div
                   className="text-sm text-muted-foreground space-y-2"
                   dangerouslySetInnerHTML={{ __html: aiAnalysis || "" }}
@@ -71,7 +66,7 @@ export default function AiStockNews() {
                     <li key={index}>
                       <a
                         href={news.url}
-                        className="text-sm  text-blue-500 hover:underline"
+                        className="text-sm text-blue-500 hover:underline"
                         target="_blank"
                         rel="noopener noreferrer"
                       >

@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-
+import { StockListing } from "@/types/stock";
 
 const timezoneMap: { [key: string]: string } = {
   EDT: "America/New_York",
@@ -34,7 +34,7 @@ export function formatDateForTooltip(
       options.hour = "2-digit";
       options.minute = "2-digit";
       break;
-       
+
     case "1M":
     case "1Y":
       options.year = "numeric";
@@ -57,47 +57,51 @@ export function formatDateForTooltip(
   }
 }
 
-export function formatTimeForXAxis(timestamp: number, timeframe: string, timezone: string): string {
+export function formatTimeForXAxis(
+  timestamp: number,
+  timeframe: string,
+  timezone: string
+): string {
   const date = new Date(timestamp * 1000); // Convert timestamp to milliseconds
   const options: Intl.DateTimeFormatOptions = {
-    timeZone: timezoneMap[timezone] || 'UTC'
+    timeZone: timezoneMap[timezone] || "UTC",
   };
 
-  if (timeframe === '1Y') {
-    options.month = 'short';
-    return new Intl.DateTimeFormat('en-US', options).format(date);
-  } else if (timeframe === '1D') {
-    options.hour = '2-digit';
-    options.minute = '2-digit';
+  if (timeframe === "1Y") {
+    options.month = "short";
+    return new Intl.DateTimeFormat("en-US", options).format(date);
+  } else if (timeframe === "1D") {
+    options.hour = "2-digit";
+    options.minute = "2-digit";
     options.hour12 = false;
-    return new Intl.DateTimeFormat('en-US', options).format(date);
-  } else if (timeframe === '5D') {
-    options.hour = '2-digit';
-    options.minute = '2-digit';
+    return new Intl.DateTimeFormat("en-US", options).format(date);
+  } else if (timeframe === "5D") {
+    options.hour = "2-digit";
+    options.minute = "2-digit";
     options.hour12 = false;
-    options.weekday = 'short';
-    return new Intl.DateTimeFormat('en-US', options).format(date);
+    options.weekday = "short";
+    return new Intl.DateTimeFormat("en-US", options).format(date);
   } else {
-    options.month = 'short';
-    options.day = 'numeric';
-    return new Intl.DateTimeFormat('en-US', options).format(date);
+    options.month = "short";
+    options.day = "numeric";
+    return new Intl.DateTimeFormat("en-US", options).format(date);
   }
 }
 // Add these properties to the function
-formatTimeForXAxis.prevDate = '';
+formatTimeForXAxis.prevDate = "";
 formatTimeForXAxis.labelCount = 0;
 
 export function formatDateLabel(timestamp: number, timezone: string): string {
   const date = new Date(timestamp * 1000); // Convert timestamp to milliseconds
   const options: Intl.DateTimeFormatOptions = {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    timeZone: timezoneMap[timezone] || 'UTC'
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: timezoneMap[timezone] || "UTC",
   };
 
-  return new Intl.DateTimeFormat('en-US', options).format(date);
+  return new Intl.DateTimeFormat("en-US", options).format(date);
 }
 
 export function formatCurrency(
@@ -145,4 +149,10 @@ export function getTimeframeOptions() {
     { value: "1M", label: "1 Month" },
     { value: "1Y", label: "1 Year" },
   ];
+}
+export function getDefaultStock(): StockListing {
+  return {
+    symbol: "^GSPC",
+    name: "S&P 500",
+  };
 }

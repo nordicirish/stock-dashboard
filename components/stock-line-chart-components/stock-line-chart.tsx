@@ -13,24 +13,23 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { fetchStockData } from "@/app/actions/user-actions";
 import { StockSearch } from "./stock-search";
 import { TimeframeSelect } from "./timeframe-select";
-import { StockListing, StockData } from "@/types/stock";
+import {  StockData } from "@/types/stock";
 import {
   formatDateForTooltip,
   formatTimeForXAxis,
   formatDateLabel,
+  getDefaultStock,
 } from "@/lib/utils";
 import { useStock } from "@/context/stock-context";
 import { Loader2 } from "lucide-react";
+
 
 export default function StockLineChart() {
   const { selectedStock } = useStock();
   const [selectedTimeframe, setSelectedTimeframe] = useState("1D");
   const [stockData, setStockData] = useState<StockData | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [defaultStock] = useState<StockListing>({
-    symbol: "^GSPC",
-    name: "S&P 500",
-  });
+  const [defaultStock] = useState(getDefaultStock());
 
   const updateStockData = useCallback(() => {
     const stockToFetch = selectedStock || defaultStock;
@@ -74,7 +73,7 @@ export default function StockLineChart() {
         </div>
         {!selectedStock && (
           <div className="text-sm text-gray-500 text-center mt-2">
-            Showing S&P 500 (Default)
+            Showing {defaultStock.name} (Default)
           </div>
         )}
         {(selectedStock || defaultStock) &&
@@ -87,7 +86,7 @@ export default function StockLineChart() {
       </CardHeader>
       <CardContent className="flex-grow">
         {" "}
-        {/* Ensure flex property here */}
+        {/* Container for LineChart */}
         {isPending ? (
           <div className="flex justify-center items-center h-[400px] ">
             <Loader2 className="h-12 w-12 animate-spin" />
