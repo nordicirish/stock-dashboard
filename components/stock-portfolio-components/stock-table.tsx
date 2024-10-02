@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useMemo } from "react";
 import {
   Table,
@@ -10,18 +8,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import {
-  Edit,
-  Trash2,
-  TrendingUp,
-  TrendingDown,
-  ChevronUp,
-  ChevronDown,
-} from "lucide-react";
-
+import { Edit, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useIsMobile } from "../../hooks/use-mobile";
 import { StockTableProps, SortOrder } from "@/types/stock";
+import {
+  formatCurrency,
+  calculatePercentChange,
+  getTrend,
+  getTrendColorClass,
+} from "@/lib/utils";
+import { TrendIcon } from "@/components/trend-icon";
 
 export function StockTable({
   stocks,
@@ -82,29 +79,15 @@ export function StockTable({
           const totalValue = stock.quantity * currentPriceData.price;
           const dailyChangePerShare =
             currentPriceData.price * (currentPriceData.percentChange / 100);
-          const isGain = currentPriceData.percentChange >= 0;
-          const textColor =
-            theme === "dark"
-              ? isGain
-                ? "text-green-400"
-                : "text-red-400"
-              : isGain
-              ? "text-green-600"
-              : "text-red-600";
-
           const totalGainValue =
             (currentPriceData.price - stock.avgPrice) * stock.quantity;
-          const totalGainPercent =
-            ((currentPriceData.price - stock.avgPrice) / stock.avgPrice) * 100;
-          const isTotalGain = totalGainValue >= 0;
-          const totalGainTextColor =
-            theme === "dark"
-              ? isTotalGain
-                ? "text-green-400"
-                : "text-red-400"
-              : isTotalGain
-              ? "text-green-600"
-              : "text-red-600";
+          const totalGainPercent = calculatePercentChange(
+            stock.avgPrice,
+            currentPriceData.price
+          );
+
+          const dailyTrend = getTrend(currentPriceData.percentChange);
+          const totalGainTrend = getTrend(totalGainValue);
 
           return (
             <React.Fragment key={stock.id}>
@@ -118,42 +101,36 @@ export function StockTable({
                       {stock.quantity.toLocaleString()}
                     </TableCell>
                     <TableCell className="text-center">
-                      ${stock.avgPrice.toFixed(2)}
+                      {formatCurrency(stock.avgPrice)}
                     </TableCell>
                     <TableCell className="text-center">
-                      ${currentPriceData.price.toFixed(2)}
+                      {formatCurrency(currentPriceData.price)}
                     </TableCell>
-                    <TableCell className={`text-center ${textColor}`}>
+                    <TableCell
+                      className={`text-center ${getTrendColorClass(
+                        dailyTrend,
+                        theme || "light"
+                      )}`}
+                    >
                       <div className="flex items-center justify-center">
-                        {isGain ? (
-                          <TrendingUp className="inline mr-1 h-4 w-4" />
-                        ) : (
-                          <TrendingDown className="inline mr-1 h-4 w-4" />
-                        )}
-                        ${Math.abs(dailyChangePerShare).toFixed(2)} (
+                        <TrendIcon trend={dailyTrend} />
+                        {formatCurrency(Math.abs(dailyChangePerShare))} (
                         {currentPriceData.percentChange.toFixed(2)}%)
                       </div>
                     </TableCell>
                     <TableCell className="text-center font-medium">
-                      $
-                      {totalValue.toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
+                      {formatCurrency(totalValue)}
                     </TableCell>
-                    <TableCell className={`text-center ${totalGainTextColor}`}>
+                    <TableCell
+                      className={`text-center ${getTrendColorClass(
+                        totalGainTrend,
+                        theme || "light"
+                      )}`}
+                    >
                       <div className="flex items-center justify-center">
-                        {isTotalGain ? (
-                          <TrendingUp className="inline mr-1 h-4 w-4" />
-                        ) : (
-                          <TrendingDown className="inline mr-1 h-4 w-4" />
-                        )}
-                        $
-                        {Math.abs(totalGainValue).toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}{" "}
-                        ({totalGainPercent.toFixed(2)}%)
+                        <TrendIcon trend={totalGainTrend} />
+                        {formatCurrency(Math.abs(totalGainValue))} (
+                        {totalGainPercent.toFixed(2)}%)
                       </div>
                     </TableCell>
                   </>
@@ -184,26 +161,30 @@ export function StockTable({
                   <TableCell colSpan={2}>
                     <div className="grid grid-cols-2 gap-0 text-xs text-center">
                       <div>Quantity: {stock.quantity.toLocaleString()}</div>
-                      <div>Avg Purc Price: ${stock.avgPrice.toFixed(2)}</div>
-                      <div>Current: ${currentPriceData.price.toFixed(2)}</div>
-                      <div className={textColor}>
-                        Daily: ${Math.abs(dailyChangePerShare).toFixed(2)} (
-                        {currentPriceData.percentChange.toFixed(2)}%)
+                      <div>
+                        Avg Purc Price: {formatCurrency(stock.avgPrice)}
                       </div>
                       <div>
-                        Value: $
-                        {totalValue.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
+                        Current: {formatCurrency(currentPriceData.price)}
                       </div>
-                      <div className={totalGainTextColor}>
-                        Gain: $
-                        {Math.abs(totalGainValue).toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}{" "}
-                        ({totalGainPercent.toFixed(2)}%)
+                      <div
+                        className={getTrendColorClass(
+                          dailyTrend,
+                          theme || "light"
+                        )}
+                      >
+                        Daily: {formatCurrency(Math.abs(dailyChangePerShare))} (
+                        {currentPriceData.percentChange.toFixed(2)}%)
+                      </div>
+                      <div>Value: {formatCurrency(totalValue)}</div>
+                      <div
+                        className={getTrendColorClass(
+                          totalGainTrend,
+                          theme || "light"
+                        )}
+                      >
+                        Gain: {formatCurrency(Math.abs(totalGainValue))} (
+                        {totalGainPercent.toFixed(2)}%)
                       </div>
                     </div>
                   </TableCell>

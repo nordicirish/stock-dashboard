@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
+import { parseInputValue } from "@/lib/utils";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,19 +58,19 @@ export function StockForm({
   );
 
   const handleInputChange = useCallback(
-    (field: keyof StockFormData, value: string | number) => {
+    (field: keyof StockFormData, value: string) => {
       let parsedValue: string | number = value;
       if (field === "quantity") {
-        parsedValue = parseInt(value as string, 10);
+        parsedValue = parseInputValue(value, "int");
       } else if (field === "avgPrice") {
-        parsedValue = parseFloat(value as string);
+        parsedValue = parseInputValue(value, "float");
       }
       setFormData((prev) => ({ ...prev, [field]: parsedValue }));
       validateField(field, parsedValue);
     },
     [validateField]
   );
-
+  
   const handleSearch = useCallback((value: string) => {
     setSearchValue(value);
     if (value.trim()) {
