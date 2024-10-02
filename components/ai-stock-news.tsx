@@ -41,14 +41,15 @@ export default function AiStockNews() {
 
   return (
     <div className="space-y-4">
-      <Card>
+      <Card className="w-full mx-auto">
         <CardHeader>
           <CardTitle>{`${stock.symbol} - ${stock.name}`}</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex justify-center items-center h-80">
-              <Loader2 className="h-12 w-12 animate-spin" />
+            <div className="flex flex-col justify-center items-center min-h-[22rem]">
+              <Loader2 className="h-24 w-24 animate-spin" />
+              <p className="text-lg font-semibold">Loading...</p>
             </div>
           ) : (
             <>

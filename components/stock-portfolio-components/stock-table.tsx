@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -43,6 +44,12 @@ export function StockTable({
   };
 
   return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Stock Portfolio</CardTitle>
+      </CardHeader>
+      <CardContent className="overflow-x-auto">
+
     <Table>
       <TableHeader className="dark:bg-slate-950/50 bg-slate-200/50">
         <TableRow>
@@ -195,5 +202,7 @@ export function StockTable({
         })}
       </TableBody>
     </Table>
-  );
+    </CardContent>
+    </Card>
+      );
 }

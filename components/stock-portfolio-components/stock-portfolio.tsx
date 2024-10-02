@@ -6,6 +6,7 @@ import { Stock } from "@/types/stock";
 import { StockPieChart } from "./stock-pie-chart";
 import { StockTable } from "./stock-table";
 import { StockFormModal } from "./stock-form-modal";
+import { PortfolioSummary } from "./stock-portfolio-summary";
 import { StockPortfolioProps } from "@/types/stock";
 import { Loader2 } from "lucide-react";
 
@@ -17,7 +18,7 @@ export function StockPortfolio({
   onDeleteStock,
   isLoading,
   isPending,
-  error, // Receive error state as a prop
+  error,
 }: StockPortfolioProps) {
   const [editingStock, setEditingStock] = useState<Stock | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -74,14 +75,15 @@ export function StockPortfolio({
           }
         }}
         onCancel={handleCloseModal}
-        isPending={isPending} // Pass isPending for the modal to handle loading state
+        isPending={isPending}
       />
     );
   };
+
   if (isLoading || isPending) {
     return (
       <div className="flex items-center flex-col justify-center h-screen">
-        <Loader2 className="h-12 w-12 animate-spin" />
+        <Loader2 className="h-24 w-24 animate-spin" />
         <p className="text-lg font-medium text-gray-800 mt-4">
           {isPending ? "Updating..." : "Loading your stock data..."}
         </p>
@@ -95,46 +97,40 @@ export function StockPortfolio({
         <CardHeader>
           <CardTitle>Add Your First Stock</CardTitle>
         </CardHeader>
-        <CardContent>
-          <Button
-            onClick={handleOpenModal}
-            variant="default"
-            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white"
-          >
-            <Plus className="h-4 w-4 mr-2" /> Add Stock
-          </Button>
-          {renderModal()}
-        </CardContent>
+        <CardContent></CardContent>
       </Card>
     );
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Stock Portfolio</CardTitle>
-        {!isPending && stocks.length > 0 && (
-          <Button
-            onClick={handleOpenModal}
-            variant="default"
-            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white"
-          >
-            <Plus className="h-4 w-4 mr-2" /> Add Stock
-          </Button>
-        )}
-      </CardHeader>
+    <Card className="mb-6">
+      <CardHeader className="flex flex-row items-center justify-between"></CardHeader>
       <CardContent>
         {error && (
           <div className="mb-4 p-2 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
             {error}
           </div>
         )}
-        <StockPieChart
-          stocks={stocks}
-          currentPrices={currentPrices}
-          COLORS={COLORS}
-          isPending={isPending}
-        />
+        <div className="flex flex-col md:flex-row gap-6 w-full">
+          <div className="md:w-2/3 md:mb-6">
+            <StockPieChart
+              stocks={stocks}
+              currentPrices={currentPrices}
+              COLORS={COLORS}
+              isPending={isPending}
+            />
+          </div>
+          <div className="md:w-1/3 flex flex-col">
+            <PortfolioSummary
+              stocks={stocks}
+              currentPrices={currentPrices}
+              handleOpenModal={handleOpenModal}
+              isPending={isPending}
+            />
+            {renderModal()}
+          </div>
+        </div>
+
         <StockTable
           stocks={stocks}
           currentPrices={currentPrices}

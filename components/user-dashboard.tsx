@@ -101,7 +101,7 @@ export default function UserDashboard() {
 
   return (
     <StockProvider>
-      <div className="flex-1 p-0 sm:p-4 space-y-4">
+      <div className="flex-1 p-0 sm:p-4">
         <StockPortfolio
           stocks={stocks}
           currentPrices={currentPrices}
@@ -112,7 +112,7 @@ export default function UserDashboard() {
           isPending={isPending}
           error={error} // pass error prop down
         />
-        <div className="flex flex-col md:flex-row gap-6 justify-center w-full">
+        <div className="flex flex-col md:flex-row gap-6 justify-center w-full mb-6">
           <div className="w-full md:w-1/2">
             <StockLineChart />
           </div>

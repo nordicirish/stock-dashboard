@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { fetchStockData } from "@/app/actions/user-actions";
 import { StockSearch } from "./stock-search";
 import { TimeframeSelect } from "./timeframe-select";
-import {  StockData } from "@/types/stock";
+import { StockData } from "@/types/stock";
 import {
   formatDateForTooltip,
   formatTimeForXAxis,
@@ -22,7 +22,6 @@ import {
 } from "@/lib/utils";
 import { useStock } from "@/context/stock-context";
 import { Loader2 } from "lucide-react";
-
 
 export default function StockLineChart() {
   const { selectedStock } = useStock();
@@ -64,7 +63,7 @@ export default function StockLineChart() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex flex-col w-full sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+        <div className="flex flex-col w-full max-w-md mx-auto sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
           <StockSearch placeholder="Search stocks..." />
           <TimeframeSelect
             selectedTimeframe={selectedTimeframe}
@@ -88,8 +87,9 @@ export default function StockLineChart() {
         {" "}
         {/* Container for LineChart */}
         {isPending ? (
-          <div className="flex justify-center items-center h-[400px] ">
-            <Loader2 className="h-12 w-12 animate-spin" />
+          <div className="flex flex-col justify-center items-center min-h-[25rem] ">
+            <Loader2 className="h-24 w-24 animate-spin" />
+            <p className="text-lg font-semibold">Loading...</p>
           </div>
         ) : stockData ? (
           <div className="w-full">
