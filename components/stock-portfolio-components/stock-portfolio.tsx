@@ -79,8 +79,8 @@ export function StockPortfolio({
     );
   };
 
-  // Don't render the component if the data isn't ready
-  if (isLoading && !isPending) {
+  // only show spinner if there are no stocks
+  if (isLoading && stocks.length === 0) {
     return (
       <Card className="mb-6 min-h-[30rem]">
         <CardHeader>
@@ -103,10 +103,11 @@ export function StockPortfolio({
             onClick={handleOpenModal}
             variant="default"
             className="flex items-center bg-blue-500 hover:bg-blue-600 text-white"
+            disabled={isPending} // Disable while pending for better UX
           >
             <Plus className="h-4 w-4 mr-2" /> Add Stock
           </Button>
-          {renderModal()}
+          
         </CardContent>
       </Card>
     );
@@ -139,7 +140,6 @@ export function StockPortfolio({
               isPending={isPending}
               isLoading={isLoading}
             />
-            {renderModal()}
           </div>
         </div>
 
@@ -153,8 +153,8 @@ export function StockPortfolio({
           onDeleteStock={onDeleteStock}
           isLoading={isLoading}
         />
-        {renderModal()}
       </CardContent>
+      {renderModal()}
     </Card>
   );
 }
