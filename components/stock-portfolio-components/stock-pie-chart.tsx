@@ -1,10 +1,10 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Stock } from "@/types/stock";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Loader2 } from "lucide-react";
+
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { clsx } from "clsx";
-import { LoadingSpinner } from "../ui/loading-spinner";
+
 
 interface StockPieChartProps {
   stocks: Stock[];
@@ -19,7 +19,7 @@ export function StockPieChart({
   currentPrices,
   COLORS,
   isPending,
-  isLoading,
+
 }: StockPieChartProps) {
   const isMobile = useIsMobile();
 
