@@ -3,7 +3,7 @@ import { useEffect, useRef, RefObject } from "react";
 // used to scale changed elements as gains and losses on refresh
 
 export function useRefreshEffect<T extends HTMLElement>(
-  value: any,
+  value: number,
   duration: number = 300
 ): RefObject<T> {
   const ref = useRef<T>(null);
