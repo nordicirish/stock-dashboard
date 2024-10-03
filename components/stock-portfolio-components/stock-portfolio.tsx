@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+
 import { useState, useMemo } from "react";
-import { Plus } from "lucide-react";
+
 import { Stock } from "@/types/stock";
 import { StockPieChart } from "./stock-pie-chart";
 import { StockTable } from "./stock-table";
@@ -9,6 +9,7 @@ import { StockFormModal } from "./stock-form-modal";
 import { PortfolioSummary } from "./stock-portfolio-summary";
 import { StockPortfolioProps } from "@/types/stock";
 import { Loader2 } from "lucide-react";
+import { getTrend } from "@/lib/utils";
 
 export function StockPortfolio({
   stocks,

@@ -25,6 +25,8 @@ export default function UserDashboard() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
+ 
+
   const fetchStocks = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -101,7 +103,7 @@ export default function UserDashboard() {
 
   return (
     <StockProvider>
-      <div className="flex-1 p-0 sm:p-4">
+      <div className="flex-1 p-0 sm:p-4 ">
         <StockPortfolio
           stocks={stocks}
           currentPrices={currentPrices}

@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+import clsx from "clsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Stock } from "@/types/stock";
 import { TrendIcon } from "@/components/trend-icon";
@@ -26,13 +28,32 @@ export function PortfolioSummary({
   handleOpenModal,
 }: PortfolioSummaryProps) {
   const { theme } = useTheme();
-  const totalValue = calculateTotalPortfolioValue(stocks, currentPrices);
-  const totalGain = calculateTotalPortfolioGain(stocks, currentPrices);
-  const totalGainPercent = (totalGain / (totalValue - totalGain)) * 100;
-  const trend = getTrend(totalGain);
+
+  const { totalValue, totalGain, totalGainPercent, trend, trendColorClass } =
+    useMemo(() => {
+      const totalValue = calculateTotalPortfolioValue(stocks, currentPrices);
+      const totalGain = calculateTotalPortfolioGain(stocks, currentPrices);
+      const totalGainPercent = (totalGain / (totalValue - totalGain)) * 100;
+      const trend = getTrend(totalGain);
+      const trendColorClass = getTrendColorClass(trend, theme || "light");
+
+      return {
+        totalValue,
+        totalGain,
+        totalGainPercent,
+        trend,
+        trendColorClass,
+      };
+    }, [stocks, currentPrices, theme]);
 
   return (
-    <Card className="mb-6">
+    <Card
+    // clsx to dynamicly apply styles
+      className={clsx(
+        "mb-6 transition-opacity duration-500 ease-in-out",
+        isPending ? "opacity-50" : "opacity-100"
+      )}
+    >
       <CardHeader>
         <CardTitle className="flex items-center justify-center">
           Stock Summary
@@ -46,14 +67,13 @@ export function PortfolioSummary({
         <div className="flex flex-col justify-center items-center">
           <h3 className="text-lg font-semibold mb-2">Total Gain/Loss</h3>
           <div
-            className={`text-xl items-center justify-center font-bold ${getTrendColorClass(
-              trend,
-              theme || "light"
-            )}`}
+            className={clsx(
+              "text-xl items-center justify-center font-bold",
+              trendColorClass
+            )}
           >
             <TrendIcon trend={trend} />
             {formatCurrency(Math.abs(totalGain))}
-
             <div className="text-center mt-2">
               <p>({totalGainPercent.toFixed(2)}%)</p>
             </div>

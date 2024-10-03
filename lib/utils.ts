@@ -128,6 +128,9 @@ export function getTrend(value: number): "up" | "down" | "neutral" {
   if (value < 0) return "down";
   return "neutral";
 }
+
+// !!! add the color classes to tailwind.config.ts safelist array
+// otherwise tailwind will purge the dynamic classes in the build
 export function getTrendColorClass(
   trend: "up" | "down" | "neutral",
   theme: string
@@ -136,8 +139,9 @@ export function getTrendColorClass(
     return theme === "dark" ? "text-green-400" : "text-green-600";
   if (trend === "down")
     return theme === "dark" ? "text-red-400" : "text-red-600";
-  return "";
+  return "text-gray-500"; // for neutral trend
 }
+
 export function parseInputValue(value: string, type: "int" | "float"): number {
   if (type === "int") return parseInt(value, 10);
   return parseFloat(value);
