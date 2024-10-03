@@ -20,8 +20,6 @@ import {
   getTrendColorClass,
 } from "@/lib/utils";
 import { TrendIcon } from "@/components/trend-icon";
-import { useRefreshEffect } from "@/hooks/use-refresh-effect";
-import { LoadingSpinner } from "../ui/loading-spinner";
 
 export function StockTable({
   stocks,
@@ -87,6 +85,11 @@ export function StockTable({
   const handleSort = () => {
     setSortOrder(sortOrder === "asc" ? "desc" : "asc");
   };
+  // Create refs for each stock
+  const dailyChangeRefs = stockData.map(() =>
+    React.createRef<HTMLDivElement>()
+  );
+  const totalGainRefs = stockData.map(() => React.createRef<HTMLDivElement>());
 
   return (
     <Card className="w-full">
@@ -125,13 +128,6 @@ export function StockTable({
           </TableHeader>
           <TableBody>
             {stockData.map((stock) => {
-              const dailyChangeRef = useRefreshEffect<HTMLDivElement>(
-                stock.dailyChangePerShare
-              );
-              const totalGainRef = useRefreshEffect<HTMLDivElement>(
-                stock.totalGainValue
-              );
-
               return (
                 <React.Fragment key={stock.id}>
                   <TableRow className="hover:bg-muted/50 dark:bg-slate-700/50 bg-slate-100/50">
@@ -152,10 +148,7 @@ export function StockTable({
                         <TableCell
                           className={`text-center ${stock.dailyTrendColorClass}`}
                         >
-                          <div
-                            ref={dailyChangeRef}
-                            className="flex items-center justify-center transition-all duration-300 ease-in-out"
-                          >
+                          <div className="flex items-center justify-center transition-all duration-300 ease-in-out">
                             <TrendIcon trend={stock.dailyTrend} />
                             {formatCurrency(
                               Math.abs(stock.dailyChangePerShare)
@@ -169,10 +162,7 @@ export function StockTable({
                         <TableCell
                           className={`text-center ${stock.totalGainColorClass}`}
                         >
-                          <div
-                            ref={totalGainRef}
-                            className="flex items-center justify-center transition-all duration-300 ease-in-out"
-                          >
+                          <div className="flex items-center justify-center transition-all duration-300 ease-in-out">
                             <TrendIcon trend={stock.totalGainTrend} />
                             {formatCurrency(Math.abs(stock.totalGainValue))} (
                             {stock.totalGainPercent.toFixed(2)}%)
@@ -217,7 +207,6 @@ export function StockTable({
                             {formatCurrency(stock.currentPriceData.price)}
                           </div>
                           <div
-                            ref={dailyChangeRef}
                             className={`${stock.dailyTrendColorClass} transition-all duration-300 ease-in-out`}
                           >
                             Daily:{" "}
@@ -228,7 +217,6 @@ export function StockTable({
                           </div>
                           <div>Value: {formatCurrency(stock.totalValue)}</div>
                           <div
-                            ref={totalGainRef}
                             className={`${stock.totalGainColorClass} transition-all duration-300 ease-in-out`}
                           >
                             Gain:{" "}
