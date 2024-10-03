@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import clsx from "clsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Stock } from "@/types/stock";
 import { TrendIcon } from "@/components/trend-icon";
@@ -13,11 +12,14 @@ import {
 } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Plus } from "lucide-react";
+import { useRefreshEffect } from "@/hooks/use-refresh-effect";
+import { clsx } from "clsx";
 
 interface PortfolioSummaryProps {
   stocks: Stock[];
   handleOpenModal: () => void;
   isPending: boolean;
+  isLoading: boolean;
   currentPrices: Record<string, { price: number; percentChange: number }>;
 }
 
@@ -46,12 +48,14 @@ export function PortfolioSummary({
       };
     }, [stocks, currentPrices, theme]);
 
+  const totalValueRef = useRefreshEffect<HTMLParagraphElement>(totalValue);
+  const totalGainRef = useRefreshEffect<HTMLDivElement>(totalGain);
+
   return (
     <Card
-    // clsx to dynamicly apply styles
       className={clsx(
-        "mb-6 transition-opacity duration-500 ease-in-out",
-        isPending ? "opacity-50" : "opacity-100"
+        "mb-6 transition-all duration-500 ease-in-out",
+        isPending ? "opacity-50 scale-95" : "opacity-100 scale-100"
       )}
     >
       <CardHeader>
@@ -62,15 +66,18 @@ export function PortfolioSummary({
       <CardContent className="flex flex-col justify-center items-center gap-8">
         <div className="flex flex-col justify-center items-center">
           <h3 className="text-lg font-semibold mb-2">Total Value</h3>
-          <p className="text-xl font-bold">{formatCurrency(totalValue)}</p>
+          <p
+            ref={totalValueRef}
+            className="text-xl font-bold transition-all duration-300 ease-in-out"
+          >
+            {formatCurrency(totalValue)}
+          </p>
         </div>
         <div className="flex flex-col justify-center items-center">
           <h3 className="text-lg font-semibold mb-2">Total Gain/Loss</h3>
           <div
-            className={clsx(
-              "text-xl items-center justify-center font-bold",
-              trendColorClass
-            )}
+            ref={totalGainRef}
+            className={`text-xl items-center justify-center font-bold transition-all duration-300 ease-in-out ${trendColorClass}`}
           >
             <TrendIcon trend={trend} />
             {formatCurrency(Math.abs(totalGain))}
@@ -83,7 +90,7 @@ export function PortfolioSummary({
           <Button
             onClick={handleOpenModal}
             variant="default"
-            className="flex w-full items-center justify-center bg-blue-500 hover:bg-blue-600 text-white"
+            className="flex w-full items-center justify-center bg-blue-500 hover:bg-blue-600 text-white transition-all duration-300 ease-in-out transform hover:scale-105"
           >
             <Plus className="h-4 w-4 mr-2" /> Add Stock
           </Button>

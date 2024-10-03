@@ -3,13 +3,15 @@ import { Stock } from "@/types/stock";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-
+import { clsx } from "clsx";
+import { LoadingSpinner } from "../ui/loading-spinner";
 
 interface StockPieChartProps {
   stocks: Stock[];
   currentPrices: Record<string, { price: number; percentChange: number }>;
   COLORS: string[];
   isPending: boolean;
+  isLoading: boolean;
 }
 
 export function StockPieChart({
@@ -17,17 +19,12 @@ export function StockPieChart({
   currentPrices,
   COLORS,
   isPending,
+  isLoading,
 }: StockPieChartProps) {
   const isMobile = useIsMobile();
 
   const outerRadius = isMobile ? 100 : 140;
-  if (isPending) {
-    return (
-      <div className="flex justify-center items-center h-[400px]">
-        <Loader2 className="h-24 w-24 animate-spin" />
-      </div>
-    );
-  }
+
   const pieData = stocks.map((stock) => ({
     symbol: stock.symbol,
     name: stock.name,
@@ -37,8 +34,10 @@ export function StockPieChart({
 
   return (
     <Card
-      className="h-[30rem] min-h-[30rem] w-full  
-        flex flex-1 flex-col items-center justify-start"
+      className={clsx(
+        "h-[30rem] min-h-[30rem] w-full flex flex-1 flex-col items-center justify-start transition-all duration-500 ease-in-out",
+        isPending ? "opacity-50 scale-95" : "opacity-100 scale-100"
+      )}
     >
       <CardHeader>
         <CardTitle>Portfolio Breakdown</CardTitle>
