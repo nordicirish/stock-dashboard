@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+
 import { getStockAnalysis } from "@/app/actions/openai-actions";
 import { useStock } from "@/context/stock-context";
 import { getLatestNews } from "@/app/actions/newsapi-actions"; // Import the server action
 import { getDefaultStock } from "@/lib/utils";
+import { LoadingSpinner } from "./ui/loading-spinner";
 
 export default function AiStockNews() {
   const { selectedStock } = useStock(); // Use selected stock from context
@@ -47,10 +48,11 @@ export default function AiStockNews() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex flex-col justify-center items-center min-h-[22rem]">
-              <Loader2 className="h-24 w-24 animate-spin" />
-              <p className="text-lg font-semibold">Loading...</p>
-            </div>
+            <LoadingSpinner
+              message="Connecting with AI..."
+              height="400px"
+              size={24}
+            />
           ) : (
             <>
               <div className="mb-4">

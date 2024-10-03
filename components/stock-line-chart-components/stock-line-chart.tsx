@@ -21,7 +21,7 @@ import {
   getDefaultStock,
 } from "@/lib/utils";
 import { useStock } from "@/context/stock-context";
-import { Loader2 } from "lucide-react";
+import { LoadingSpinner } from "../ui/loading-spinner";
 
 export default function StockLineChart() {
   const { selectedStock } = useStock();
@@ -87,10 +87,7 @@ export default function StockLineChart() {
         {" "}
         {/* Container for LineChart */}
         {isPending ? (
-          <div className="flex flex-col justify-center items-center min-h-[25rem] ">
-            <Loader2 className="h-24 w-24 animate-spin" />
-            <p className="text-lg font-semibold">Loading...</p>
-          </div>
+          <LoadingSpinner message="Fetching data..." height="400px" size={24} />
         ) : stockData ? (
           <div className="w-full">
             {" "}
