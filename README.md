@@ -24,6 +24,7 @@ Check out the live app here: [Stock Market Dashboard Live](https://stock-dashboa
 - **Tailwind CSS** for styling
 - **Prisma** for database management
 - **PostgeSQL** database provider
+- **Zod** for data validation
 - **Next-Auth** for authentication
 - **Shadcn** ui component library
 - **YahooFinance** Finance API

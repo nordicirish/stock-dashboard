@@ -69,6 +69,7 @@ const config = {
     "text-red-400",
     "text-red-600",
     "text-gray-500",
+    "bg-zinc-300",
   ],
   plugins: [],
 } satisfies Config;

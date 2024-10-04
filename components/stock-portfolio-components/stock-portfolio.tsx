@@ -107,15 +107,13 @@ export function StockPortfolio({
           >
             <Plus className="h-4 w-4 mr-2" /> Add Stock
           </Button>
-          
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="mb-6 min-h-96">
-      <CardHeader className="flex flex-row items-center justify-between"></CardHeader>
+    <Card className="mb-6 min-h-96 pt-6" >
       <CardContent>
         {error && (
           <div className="mb-4 p-2 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
