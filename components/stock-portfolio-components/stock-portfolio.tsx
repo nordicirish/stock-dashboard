@@ -113,8 +113,8 @@ export function StockPortfolio({
   }
 
   return (
-    <Card className="mb-6 min-h-96 pt-6" >
-      <CardContent>
+    <div className="mb-6 min-h-96 pt-6">
+      <div>
         {error && (
           <div className="mb-4 p-2 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
             {error}
@@ -151,8 +151,8 @@ export function StockPortfolio({
           onDeleteStock={onDeleteStock}
           isLoading={isLoading}
         />
-      </CardContent>
+      </div>
       {renderModal()}
-    </Card>
+    </div>
   );
 }
