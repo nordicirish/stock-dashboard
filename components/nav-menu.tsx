@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { clsx } from "clsx";
-import { Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import ThemeToggle from "./theme-toggle";
@@ -25,15 +25,15 @@ export default function NavMenu() {
   };
 
   return (
-    <nav className="w-full h-[4rem] border-b border-opacity-40 bg-white/90 dark:bg-gray-950/90 shadow-light-mode dark:shadow-dark-mode flex items-center justify-between px-4 md:px-0 md:justify-center md:items-center transition-all duration-300 ease-in-out">
-      {/* Mobile menu and title */}
-      <div className="flex items-center justify-between w-full md:w-auto">
+    <nav className="w-full h-[4rem] border-b border-opacity-40 bg-zinc-100/60 dark:bg-zinc-950/60 shadow-light-mode md: rounded-md dark:shadow-dark-mode flex items-center justify-between px-4 md:px-6 transition-all duration-300 ease-in-out">
+      {/* Mobile menu button */}
+      <div className="md:hidden">
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden text-gray-800 hover:text-gray-950 dark:text-gray-200 dark:hover:text-white focus:outline-none mr-6"
+              className="text-gray-800 hover:text-gray-950 dark:text-gray-200 dark:hover:text-white focus:outline-none"
             >
               <Menu className="h-6 w-6" />
               <span className="sr-only">Open menu</span>
@@ -41,9 +41,9 @@ export default function NavMenu() {
           </SheetTrigger>
           <SheetContent
             side="right"
-            className="w-[300px] sm:w-[400px] bg-white/90 dark:bg-gray-950/70 pt-[5.5rem] rounded-sm custom-hide-close-btn"
+            className="w-[300px] sm:w-[400px] bg-white/90 dark:bg-gray-950/90 pt-16 rounded-sm"
           >
-            <div className="absolute top-5 left-5 ">
+            <div className="absolute top-4 left-4">
               <ThemeToggle />
             </div>
             <nav className="flex flex-col space-y-4">
@@ -75,21 +75,20 @@ export default function NavMenu() {
             </nav>
           </SheetContent>
         </Sheet>
+      </div>
 
-        {/* Page title */}
-        <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-green-500 to-purple-600 dark:from-blue-400 dark:via-green-400 dark:to-purple-400 md:ml-6 md:mr-2 md:flex-shrink-0">
+      {/* Page title - centered in mobile, left-aligned in desktop */}
+      <div className="flex-1 flex justify-center md:justify-start">
+        <h1 className="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-green-500 to-purple-600 dark:from-blue-400 dark:via-green-400 dark:to-purple-400 whitespace-nowrap overflow-hidden text-ellipsis max-w-[calc(100%-5rem)] md:max-w-none md:ml-6 md:mr-2">
           {session?.user?.name ? `${session.user.name}'s ` : ""}Stock Dashboard
         </h1>
       </div>
 
       {/* Desktop menu */}
-      <ul className="hidden md:flex w-full flex-row items-center justify-end gap-4 text-sm font-medium text-gray-500 md:mr-6 md:ml-2 h-10">
+      <ul className="hidden md:flex items-center gap-4 text-sm font-medium text-gray-500">
         {session &&
           links.map((link) => (
-            <li
-              key={link.hash}
-              className="relative transition-all h-full flex items-center"
-            >
+            <li key={link.hash} className="h-10 flex items-center">
               <NavLink
                 {...link}
                 onClick={handleLinkClick}
@@ -97,7 +96,7 @@ export default function NavMenu() {
               />
             </li>
           ))}
-        <li className="relative transition-all h-full flex items-center">
+        <li className="h-10 flex items-center">
           {session ? (
             <Button
               onClick={() => signOut()}
@@ -114,7 +113,7 @@ export default function NavMenu() {
             </Button>
           )}
         </li>
-        <li className="relative transition-all h-full flex items-center">
+        <li className="h-10 flex items-center">
           <ThemeToggle />
         </li>
       </ul>
@@ -122,7 +121,7 @@ export default function NavMenu() {
   );
 }
 
-// Reusable NavLink component
+
 const NavLink: React.FC<{
   name: string;
   hash: string;
@@ -133,21 +132,15 @@ const NavLink: React.FC<{
   <Link
     href={hash}
     className={clsx(
-      "flex items-center justify-center px-3 py-2 transition-all relative h-full text-base",
+      "flex items-center justify-center px-3 py-2 transition-all relative h-full text-base rounded-lg",
       isActive
-        ? "text-white dark:text-gray-300 bg-gradient-to-r from-green-500 to-cyan-500 rounded-lg shadow-md"
-        : "text-gray-800 hover:text-gray-950 dark:text-gray-400 dark:hover:text-gray-300"
+        ? "text-white dark:text-gray-100 bg-gradient-to-r from-green-500 to-cyan-500 shadow-md"
+        : "text-gray-800 dark:text-gray-200 bg-gradient-to-r from-transparent to-transparent hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-700 dark:hover:to-gray-600",
+      "hover:text-gray-900 dark:hover:text-white",
+      isMobile ? "w-full" : ""
     )}
     onClick={onClick}
   >
     {name}
-    {isActive && (
-      <span
-        className={clsx(
-          "absolute inset-0 -z-10 bg-gradient-to-r from-green-500 to-cyan-500 shadow-md",
-          isMobile ? "rounded-none" : "rounded-lg"
-        )}
-      />
-    )}
   </Link>
 );

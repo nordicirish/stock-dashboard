@@ -2,6 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .bg-card {
+    @apply bg-zinc-100/80 !important;
+    @apply dark:bg-zinc-900/70 !important ;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -57,20 +73,5 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-  }
-}
-@layer components {
-  .bg-card {
-    @apply bg-zinc-100/70;
-    @apply dark:bg-zinc-900/70;
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
   }
 }
