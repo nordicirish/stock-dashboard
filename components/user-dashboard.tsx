@@ -93,8 +93,8 @@ export default function UserDashboard() {
 
   if (status === "unauthenticated") {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-lg font-medium text-gray-600">
+      <div className="flex items-center justify-center h-20 ">
+        <p className="text-lg font-medium dark:text-gray-100 text-gray-600">
           Please sign in to view your stock portfolio.
         </p>
       </div>
@@ -114,7 +114,7 @@ export default function UserDashboard() {
           isPending={isPending}
           error={error} // pass error prop down
         />
-        <div className="flex flex-col md:flex-row gap-6 justify-center w-full mb-6">
+        <div className="flex flex-col md:flex-row gap-6 justify-center w-full">
           <div className="w-full md:w-1/2">
             <StockLineChart />
           </div>
