@@ -1,9 +1,8 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "./api/auth/[...nextauth]/options";
+import { auth, signIn, signOut } from "@/auth";
 
 //use async function as getServerSession is promise
 export default async function Home() {
-  const session = await getServerSession(authOptions);
+   const session = await auth();
   console.log("Session:", session);
 
   return (

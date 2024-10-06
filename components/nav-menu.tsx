@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
+
+import { useSession, signIn, signOut } from "next-auth/react"; // need to import useSession rather than session as client component
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signIn, signOut, useSession } from "next-auth/react";
 import { clsx } from "clsx";
 import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -120,7 +121,6 @@ export default function NavMenu() {
     </nav>
   );
 }
-
 
 const NavLink: React.FC<{
   name: string;

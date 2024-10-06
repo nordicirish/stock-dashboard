@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import ThemeContextProvider from "@/context/theme-switch";
-import { getServerSession } from "next-auth/next";
+
 import SessionProvider from "@/components/session-provider";
-import { authOptions } from "./api/auth/[...nextauth]/options";
+import { auth, signIn, signOut } from "@/auth";
 import NavMenu from "@/components/nav-menu";
 import { Inter } from "next/font/google";
 
@@ -22,7 +22,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
+  // for session provider
 
   return (
     <ThemeContextProvider>
