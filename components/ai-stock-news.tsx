@@ -20,13 +20,13 @@ export default function AiStockNews() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchStockData(stockSymbol: string) {
+    async function fetchStockData(stockName: string) {
       try {
         setIsLoading(true);
         // use promises to fetch stock data in parallel for better UX
         const [analysis, news] = await Promise.all([
-          getStockAnalysis(stockSymbol), // Unified stock analysis function
-          getLatestNews(stockSymbol), // Fetch latest news from the server action
+          getStockAnalysis(stockName), // Unified stock analysis function
+          getLatestNews(stockName), // Fetch latest news from the server action
         ]);
         setAiAnalysis(analysis);
         setLatestNews(news);
@@ -37,14 +37,14 @@ export default function AiStockNews() {
       }
     }
 
-    fetchStockData(stock.symbol);
-  }, [stock.symbol]);
+    fetchStockData( stock.name);
+  }, [stock.name]);
 
   return (
     <div className="space-y-4">
       <Card className="w-full mx-auto">
         <CardHeader>
-          <CardTitle>{`${stock.symbol} - ${stock.name}`}</CardTitle>
+          <CardTitle>{`${stock.name} - Insights`}</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
