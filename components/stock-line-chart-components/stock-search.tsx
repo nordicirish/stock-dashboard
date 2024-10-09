@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { StockListing } from "@/types/stock";
-import { searchStocks } from "@/app/actions/user-actions";
+import { searchStocks } from "@/app/actions/stock-actions";
 import { Button } from "@/components/ui/button";
 import {
   Popover,

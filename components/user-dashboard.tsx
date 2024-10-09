@@ -12,7 +12,7 @@ import {
   deleteStock,
   addStock,
   getCurrentPrices,
-} from "@/app/actions/user-actions";
+} from "@/app/actions/stock-actions";
 import { StockProvider } from "@/context/stock-context";
 
 export default function UserDashboard() {

@@ -10,7 +10,7 @@ import {
   YAxis,
 } from "recharts";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { fetchStockData } from "@/app/actions/user-actions";
+import { fetchStockData } from "@/app/actions/stock-actions";
 import { StockSearch } from "./stock-search";
 import { TimeframeSelect } from "./timeframe-select";
 import { StockData } from "@/types/stock";
