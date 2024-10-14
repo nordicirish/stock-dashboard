@@ -13,7 +13,7 @@ import { ChevronsUpDown, Search, DollarSign, Hash } from "lucide-react";
 import { searchStocks } from "@/app/actions/stock-actions";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import  { stockFormSchema } from "@/types/zod-types";
+import  { StockFormSchema } from "@/types/zod-types";
 
 interface StockFormProps {
   existingStock?: Stock;
@@ -22,7 +22,7 @@ interface StockFormProps {
   isPending: boolean;
 }
 
-type StockFormData = z.infer<typeof stockFormSchema>;
+type StockFormData = z.infer<typeof StockFormSchema>;
 
 export function StockForm({
   existingStock,
@@ -46,7 +46,7 @@ export function StockForm({
   const validateField = useCallback(
     (field: keyof StockFormData, value: string | number) => {
       try {
-        stockFormSchema.shape[field].parse(value);
+        StockFormSchema.shape[field].parse(value);
         setErrors((prev) => ({ ...prev, [field]: undefined }));
       } catch (error) {
         if (error instanceof z.ZodError) {
@@ -90,7 +90,7 @@ export function StockForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const validatedData = stockFormSchema.parse(formData);
+      const validatedData = StockFormSchema.parse(formData);
       onSubmit({
         ...validatedData,
         userId: existingStock?.userId || "testuser123",

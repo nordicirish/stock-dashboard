@@ -1,4 +1,4 @@
- import NextAuth from "next-auth";
+import NextAuth from "next-auth";
 
 declare module "next-auth" {
   interface Session {
@@ -9,4 +9,9 @@ declare module "next-auth" {
       image?: string | null;
     };
   }
+  type SessionPayload = {
+    userId: string;
+    expiresAt: Date;
+    
+  };
 }

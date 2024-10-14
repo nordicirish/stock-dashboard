@@ -2,7 +2,8 @@
 import { StockData, StockListing, YahooQuote, Stock } from "@/types/stock";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "./user-actions";
-
+import { auth } from "@/auth";
+// Fetch stock data from Yahoo Finance API
 export async function fetchStockData(
   symbol: string,
   timeframe: string
@@ -79,98 +80,54 @@ export async function searchStocks(query: string): Promise<StockListing[]> {
 }
 // Add or update a stock for the current user
 export async function addStock(
-  stockData: Omit<Stock, "id" | "createdAt" | "updatedAt">
+  stock: Omit<Stock, "id" | "createdAt" | "updatedAt">
 ): Promise<Stock> {
-  const userId = await getCurrentUserId();
-  try {
-    const existingStock = await prisma.stock.findUnique({
-      where: {
-        userId_symbol: {
-          userId: userId,
-          symbol: stockData.symbol,
-        },
-      },
-    });
-
-    if (existingStock) {
-      // Update existing stock
-      return await prisma.stock.update({
-        where: {
-          userId_symbol: {
-            userId: userId,
-            symbol: stockData.symbol,
-          },
-        },
-        data: {
-          quantity: existingStock.quantity + stockData.quantity,
-          avgPrice:
-            (existingStock.avgPrice * existingStock.quantity +
-              stockData.avgPrice * stockData.quantity) /
-            (existingStock.quantity + stockData.quantity),
-        },
-      });
-    } else {
-      // Create new stock
-      return await prisma.stock.create({
-        data: {
-          ...stockData,
-          userId: userId,
-        },
-      });
-    }
-  } catch (error: unknown) {
-    if (error instanceof Error && error.message === "User not authenticated") {
-      // Handle the case where the user is not authenticated
-      // For example, you could redirect the user to the login page
-      throw new Error("Please log in to add a stock");
-    } else {
-      throw error;
-    }
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("User not authenticated");
   }
+
+  return prisma.stock.create({
+    data: {
+      ...stock,
+      userId: session.user.id,
+    },
+  });
 }
 
 // Get all stocks for the current user
 export async function getStocks(): Promise<Stock[]> {
-  const userId = await getCurrentUserId();
-  return await prisma.stock.findMany({
-    where: { userId: userId },
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("User not authenticated");
+  }
+
+  return prisma.stock.findMany({
+    where: { userId: session.user.id },
   });
 }
 
 // Update stock details for the current user
-export async function updateStock(
-  stockData: Omit<Stock, "id" | "createdAt" | "updatedAt">
-): Promise<Stock> {
-  const userId = await getCurrentUserId();
-  try {
-    const updatedStock = await prisma.stock.update({
-      where: {
-        userId_symbol: {
-          userId: userId,
-          symbol: stockData.symbol,
-        },
-      },
-      data: {
-        name: stockData.name,
-        quantity: stockData.quantity,
-        avgPrice: stockData.avgPrice,
-      },
-    });
-    return updatedStock;
-  } catch (error) {
-    console.error("Error updating stock:", error);
-    throw error;
+export async function updateStock(stock: Stock): Promise<Stock> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("User not authenticated");
   }
+
+  return prisma.stock.update({
+    where: { id: stock.id, userId: session.user.id },
+    data: stock,
+  });
 }
 
-// Delete a stock for the current user
 export async function deleteStock(stockId: number): Promise<void> {
-  const userId = await getCurrentUserId();
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("User not authenticated");
+  }
+
   await prisma.stock.delete({
-    where: {
-      id: stockId,
-      userId: userId,
-    },
+    where: { id: stockId, userId: session.user.id },
   });
 }
 

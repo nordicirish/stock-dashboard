@@ -1,49 +1,186 @@
+
+
 "use server";
-import { StockData, StockListing, YahooQuote, Stock } from "@/types/stock";
-import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import { hash } from "bcryptjs";
-import { User } from "@prisma/client";
+import { signIn } from "@/auth";
+import { createSession } from "./session-actions";
+import { FormState, SignupSchema } from "@/types/zod-types";
+import { cookies } from "next/headers";
 
 export async function registerUser(
-  userData: Omit<User, "id" | "image" | "emailVerified">
-) {
-  const { name, email, password } = userData;
+  prevState: FormState,
+  formData: FormData
+): Promise<FormState> {
+  // 1. Validate form fields
+  const validatedFields = SignupSchema.safeParse({
+    name: formData.get("name"),
+    email: formData.get("email"),
+    password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword"),
+    acceptTerms: formData.get("acceptTerms") === "on",
+  });
+
+  // If any form fields are invalid, return early
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Please correct the errors below.",
+      success: false,
+    };
+  }
+
+  // 2. Prepare data for insertion into database
+  const { name, email, password } = validatedFields.data;
 
   try {
-    // Check if user already exists
+    // 3. Check if the user's email already exists
     const existingUser = await prisma.user.findUnique({
-      where: { email: email ?? "" },
+      where: { email: email },
     });
 
     if (existingUser) {
-      return { success: false, error: "User with this email already exists" };
+      return {
+        errors: { email: ["Email already exists"] },
+        message: "Email already exists, please use a different email.",
+        success: false,
+      };
     }
 
-    // Hash the password
-    const hashedPassword = await hash(password ?? "", 12);
+    // Hash the user's password
+    const hashedPassword = await hash(password, 12);
 
-    // Create the user
+    // 4. Insert the user into the database
     const user = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
-        // Set default values for fields not provided in the form
         emailVerified: null,
         image: null,
       },
     });
 
+    if (!user) {
+      return {
+        message: "An error occurred while creating your account.",
+        success: false,
+      };
+    }
+
+    // 5. Sign in the user
+    const signInResult = await signIn("credentials", {
+      email: email,
+      password: password,
+      redirect: false,
+    });
+
+    if (signInResult?.error) {
+      console.error("Error signing in after registration:", signInResult.error);
+      return {
+        message:
+          "Account created, but failed to sign in. Please try logging in.",
+        success: false,
+      };
+    }
+
+    // 6. Create a session for the user
+    const session = await createSession(user.id);
+
+    // 7. Set the session cookie
+    cookies().set("session", session.sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 30 * 24 * 60 * 60, // 30 days
+      path: "/",
+    });
+
     return {
+      message: "Account created successfully. You are now logged in.",
       success: true,
-      user: { id: user.id, name: user.name, email: user.email },
     };
   } catch (error) {
-    console.error("Error registering user:", error);
-    return { success: false, error: "Failed to register user" };
+    console.error("Error in registerUser:", error);
+    return {
+      message: "An unexpected error occurred. Please try again.",
+      success: false,
+    };
   }
 }
+// export async function login(
+//   state: FormState,
+//   formData: FormData,
+// ): Promise<FormState> {
+//   // 1. Validate form fields
+//   const validatedFields = LoginFormSchema.safeParse({
+//     email: formData.get('email'),
+//     password: formData.get('password'),
+//   });
+//   const errorMessage = { message: 'Invalid login credentials.' };
+
+//   // If any form fields are invalid, return early
+//   if (!validatedFields.success) {
+//     return {
+//       errors: validatedFields.error.flatten().fieldErrors,
+//     };
+//   }
+// }
+
+// export async function registerUser(
+//   userData: Omit<User, "id" | "image" | "emailVerified">
+// ) {
+//   const { name, email, password } = userData;
+
+//   try {
+//     // Check if user already exists
+//     const existingUser = await prisma.user.findUnique({
+//       where: { email: email ?? "" },
+//     });
+
+//     if (existingUser) {
+//       return { success: false, error: "User with this email already exists" };
+//     }
+
+//     // Hash the password
+//     const hashedPassword = await hash(password ?? "", 12);
+
+//     // Create the user
+//     const user = await prisma.user.create({
+//       data: {
+//         name,
+//         email,
+//         password: hashedPassword,
+//         emailVerified: null,
+//         image: null,
+//       },
+//     });
+
+//     // Sign in the user
+//     const signInResult = await signIn("credentials", {
+//       email: email,
+//       password: password,
+//       redirect: false,
+//     });
+
+//     if (signInResult?.error) {
+//       console.error("Error signing in after registration:", signInResult.error);
+//       return { success: false, error: "Failed to sign in after registration" };
+//     }
+
+//     // Optionally, fetch the session again to ensure it's updated
+//     await getCurrentUserId(); // This will ensure the session is refreshed
+
+//     return {
+//       success: true,
+//       user: { id: user.id, name: user.name, email: user.email },
+//       session: await createSession(user.id),
+//     };
+//   } catch (error) {
+//     console.error("Error registering user:", error);
+//     return { success: false, error: "Failed to register user" };
+//   }
+// }
 
 export async function getCurrentUserId(): Promise<string> {
   const session = await auth();
@@ -52,4 +189,4 @@ export async function getCurrentUserId(): Promise<string> {
   }
   return session.user.id;
 }
-// Fetch stock data from Yahoo Finance API
+

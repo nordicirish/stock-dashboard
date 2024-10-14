@@ -16,7 +16,7 @@ import {
 import { StockProvider } from "@/context/stock-context";
 
 export default function UserDashboard() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [currentPrices, setCurrentPrices] = useState<
     Record<string, { price: number; percentChange: number }>
@@ -25,9 +25,8 @@ export default function UserDashboard() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
- 
-
   const fetchStocks = useCallback(async () => {
+    if (!session?.user?.id) return;
     setIsLoading(true);
     try {
       const fetchedStocks = await getStocks();
@@ -35,10 +34,11 @@ export default function UserDashboard() {
       return fetchedStocks;
     } catch (error) {
       console.error("Error fetching stocks:", error);
+      setError("Failed to fetch stocks. Please try again.");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [session]);
 
   const fetchCurrentPrices = useCallback(async (stocksToFetch: Stock[]) => {
     try {
@@ -47,6 +47,7 @@ export default function UserDashboard() {
       setCurrentPrices(prices);
     } catch (error) {
       console.error("Error fetching current prices:", error);
+      setError("Failed to fetch current prices. Please try again.");
     }
   }, []);
 
@@ -66,30 +67,56 @@ export default function UserDashboard() {
   }, [refreshData, status]);
 
   const handleAddStock = async (newStock: Omit<Stock, "id">) => {
+    if (!session?.user?.id) {
+      setError("You must be logged in to add stocks.");
+      return;
+    }
     try {
-      await addStock(newStock);
-      await refreshData();
+      startTransition(async () => {
+        await addStock({ ...newStock, userId: session.user.id });
+        await refreshData();
+      });
     } catch (error) {
       console.error("Error adding stock:", error);
+      setError("Failed to add stock. Please try again.");
     }
   };
 
   const handleUpdateStock = async (updatedStock: Stock) => {
+    if (!session?.user?.id) {
+      setError("You must be logged in to update stocks.");
+      return;
+    }
     try {
-      await updateStock(updatedStock);
-      await refreshData();
+      startTransition(async () => {
+        await updateStock(updatedStock);
+        await refreshData();
+      });
     } catch (error) {
       console.error("Error updating stock:", error);
+      setError("Failed to update stock. Please try again.");
     }
   };
+
   const handleDeleteStock = async (stockId: number) => {
+    if (!session?.user?.id) {
+      setError("You must be logged in to delete stocks.");
+      return;
+    }
     try {
-      await deleteStock(stockId);
-      await refreshData();
+      startTransition(async () => {
+        await deleteStock(stockId);
+        await refreshData();
+      });
     } catch (error) {
-      setError("Error deleting stock");
+      console.error("Error deleting stock:", error);
+      setError("Failed to delete stock. Please try again.");
     }
   };
+
+  if (status === "loading") {
+    return <div>Loading...</div>;
+  }
 
   if (status === "unauthenticated") {
     return (
@@ -112,7 +139,7 @@ export default function UserDashboard() {
           onDeleteStock={handleDeleteStock}
           isLoading={isLoading}
           isPending={isPending}
-          error={error} // pass error prop down
+          error={error}
         />
         <div className="flex flex-col md:flex-row gap-6 justify-center w-full">
           <div className="w-full md:w-1/2">
