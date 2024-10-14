@@ -1,7 +1,12 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface TermsModalProps {
   onClose: () => void;
@@ -9,63 +14,78 @@ interface TermsModalProps {
 
 export function TermsModal({ onClose }: TermsModalProps) {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-2xl">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Terms and Conditions</CardTitle>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[60vh] w-full rounded-md border p-4">
-            <h2 className="text-lg font-bold mb-4">Terms and Conditions</h2>
-            <p className="mb-4">
-              Welcome to our service. By using our service, you agree to these
-              terms. Please read them carefully.
-            </p>
-            <h3 className="font-semibold mb-2">1. Use of Service</h3>
-            <p className="mb-4">
-              You must follow any policies made available to you within the
-              Service. Don&apos;t misuse our Services. For example, don&apos;t
-              interfere with our Services or try to access them using a method
-              other than the interface and the instructions that we provide.
-            </p>
-            <h3 className="font-semibold mb-2">2. Privacy</h3>
-            <p className="mb-4">
-              Our privacy policies explain how we treat your personal data and
-              protect your privacy when you use our Services. By using our
-              Services, you agree that we can use such data in accordance with
-              our privacy policies.
-            </p>
-            <h3 className="font-semibold mb-2">3. Modifications</h3>
-            <p className="mb-4">
-              We may modify these terms or any additional terms that apply to a
-              Service to, for example, reflect changes to the law or changes to
-              our Services. You should look at the terms regularly.
-            </p>
-            <h3 className="font-semibold mb-2">4. Liabilities</h3>
-            <p className="mb-4">
-              When permitted by law, we will not be responsible for lost
-              profits, revenues, or data, financial losses or indirect, special,
-              consequential, exemplary, or punitive damages.
-            </p>
-            <h3 className="font-semibold mb-2">
-              5. Business uses of our Services
-            </h3>
-            <p className="mb-4">
-              If you are using our Services on behalf of a business, that
-              business accepts these terms. It will hold harmless and indemnify
-              us and our affiliates, officers, agents, and employees from any
-              claim, suit or action arising from or related to the use of the
-              Services.
-            </p>
-          </ScrollArea>
-          <div className="mt-4 flex justify-end">
-            <Button onClick={onClose}>Close</Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Terms and Conditions</DialogTitle>
+          <DialogDescription>
+            Please read our terms and conditions carefully.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="max-h-[300px] overflow-y-auto">
+          <h3 className="text-lg font-semibold mb-2">1. Acceptance of Terms</h3>
+          <p className="mb-4">
+            By accessing and using this stock portfolio management service, you
+            agree to be bound by these Terms and Conditions, all applicable laws
+            and regulations, and agree that you are responsible for compliance
+            with any applicable local laws.
+          </p>
+          <h3 className="text-lg font-semibold mb-2">2. Use License</h3>
+          <p className="mb-4">
+            Permission is granted to temporarily use this service for personal,
+            non-commercial transitory viewing only. This is the grant of a
+            license, not a transfer of title, and under this license you may
+            not:
+            <ul className="list-disc list-inside mt-2">
+              <li>modify or copy the materials;</li>
+              <li>use the materials for any commercial purpose;</li>
+              <li>
+                attempt to decompile or reverse engineer any software contained
+                in the service;
+              </li>
+              <li>
+                remove any copyright or other proprietary notations from the
+                materials; or
+              </li>
+              <li>
+                transfer the materials to another person or &quot;mirror&quot;
+                the materials on any other server.
+              </li>
+            </ul>
+          </p>
+          <h3 className="text-lg font-semibold mb-2">3. Disclaimer</h3>
+          <p className="mb-4">
+            The materials on this service are provided on an &apos;as is&apos;
+            basis. We make no warranties, expressed or implied, and hereby
+            disclaim and negate all other warranties including, without
+            limitation, implied warranties or conditions of merchantability,
+            fitness for a particular purpose, or non-infringement of
+            intellectual property or other violation of rights.
+          </p>
+          <h3 className="text-lg font-semibold mb-2">4. Limitations</h3>
+          <p className="mb-4">
+            In no event shall we or our suppliers be liable for any damages
+            (including, without limitation, damages for loss of data or profit,
+            or due to business interruption) arising out of the use or inability
+            to use the materials on our service, even if we or an authorized
+            representative has been notified orally or in writing of the
+            possibility of such damage.
+          </p>
+          <h3 className="text-lg font-semibold mb-2">
+            5. Accuracy of Materials
+          </h3>
+          <p className="mb-4">
+            The materials appearing on our service could include technical,
+            typographical, or photographic errors. We do not warrant that any of
+            the materials on our service are accurate, complete or current. We
+            may make changes to the materials contained on our service at any
+            time without notice.
+          </p>
+        </div>
+        <DialogFooter>
+          <Button onClick={onClose}>Close</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
