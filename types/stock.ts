@@ -15,32 +15,39 @@ export interface StockData {
 }
 
 export interface Stock {
-  id?: number;
+  id: number;
   userId: string;
   symbol: string;
   name: string;
   quantity: number;
   avgPrice: number;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  
 }
 
-export interface YahooQuote {
-  symbol: string;
-  shortname?: string;
-  longname?: string;
-  exchange: string;
-}
+export type NewStock = Omit<
+  Stock,
+  "id" | "userId" | "createdAt" | "updatedAt"
+>;
+
+export type UpdateStock = Partial<NewStock> & { id: number };
 
 export interface StockPortfolioProps {
   stocks: Stock[];
   currentPrices: Record<string, { price: number; percentChange: number }>;
   isPending: boolean;
   isLoading: boolean;
-  onAddStock: (stock: Omit<Stock, "id">) => Promise<void>;
-  onUpdateStock: (stock: Stock) => Promise<void>;
+  onAddStock: (stock: NewStock) => Promise<void>;
+  onUpdateStock: (stock: UpdateStock) => Promise<void>;
   onDeleteStock: (stockId: number) => Promise<void>;
-  error: string | null; // Receive error state as a prop
+  error: string | null;
+}
+export interface YahooQuote {
+  symbol: string;
+  shortname?: string;
+  longname?: string;
+  exchange: string;
 }
 
 export interface StockTableProps {
@@ -49,8 +56,6 @@ export interface StockTableProps {
   onEditStock: (stock: Stock) => void;
   onDeleteStock: (stockId: number) => void;
   isLoading: boolean;
- 
-
 }
 
 export type SortOrder = "asc" | "desc";
