@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useTransition } from "react";
 import { useSession } from "next-auth/react";
 import StockLineChart from "./stock-line-chart-components/stock-line-chart";
 import { StockPortfolio } from "./stock-portfolio-components/stock-portfolio";
-import { Stock } from "@/types/stock";
+import { Stock, NewStock, UpdateStock } from "@/types/stock";
 import AiStockNews from "@/components/ai-stock-news";
 import {
   getStocks,
@@ -66,7 +66,7 @@ export default function UserDashboard() {
     }
   }, [refreshData, status]);
 
-  const handleAddStock = async (newStock: Omit<Stock, "id">) => {
+  const handleAddStock = async (newStock: NewStock) => {
     if (!session?.user?.id) {
       setError("You must be logged in to add stocks.");
       return;
@@ -82,7 +82,7 @@ export default function UserDashboard() {
     }
   };
 
-  const handleUpdateStock = async (updatedStock: Stock) => {
+  const handleUpdateStock = async (updatedStock: UpdateStock) => {
     if (!session?.user?.id) {
       setError("You must be logged in to update stocks.");
       return;

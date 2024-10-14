@@ -1,5 +1,5 @@
 "use server";
-import { StockData, StockListing, YahooQuote, Stock } from "@/types/stock";
+import { StockData, StockListing, YahooQuote, Stock, NewStock,  UpdateStock } from "@/types/stock";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "./user-actions";
 import { auth } from "@/auth";
@@ -80,7 +80,7 @@ export async function searchStocks(query: string): Promise<StockListing[]> {
 }
 // Add or update a stock for the current user
 export async function addStock(
-  stock: Omit<Stock, "id" | "createdAt" | "updatedAt">
+  stock: NewStock & { userId: string }
 ): Promise<Stock> {
   const session = await auth();
   if (!session?.user?.id) {
@@ -95,6 +95,8 @@ export async function addStock(
   });
 }
 
+
+
 // Get all stocks for the current user
 export async function getStocks(): Promise<Stock[]> {
   const session = await auth();
@@ -108,18 +110,17 @@ export async function getStocks(): Promise<Stock[]> {
 }
 
 // Update stock details for the current user
-export async function updateStock(stock: Stock): Promise<Stock> {
+export async function updateStock(stock: UpdateStock): Promise<Stock> {
   const session = await auth();
   if (!session?.user?.id) {
     throw new Error("User not authenticated");
   }
 
   return prisma.stock.update({
-    where: { id: stock.id, userId: session.user.id },
+    where: { id: stock.id, userId: session.user.id,  },
     data: stock,
   });
 }
-
 export async function deleteStock(stockId: number): Promise<void> {
   const session = await auth();
   if (!session?.user?.id) {

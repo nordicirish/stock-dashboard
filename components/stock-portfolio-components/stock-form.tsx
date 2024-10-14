@@ -3,7 +3,7 @@ import { parseInputValue } from "@/lib/utils";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Stock, StockListing } from "@/types/stock";
+import { Stock, StockListing, NewStock } from "@/types/stock";
 import {
   Popover,
   PopoverContent,
@@ -13,18 +13,18 @@ import { ChevronsUpDown, Search, DollarSign, Hash } from "lucide-react";
 import { searchStocks } from "@/app/actions/stock-actions";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import  { StockFormSchema } from "@/types/zod-types";
+import { StockFormSchema } from "@/types/zod-types";
 
 interface StockFormProps {
-  existingStock?: Stock;
-  onSubmit: (stock: Omit<Stock, "id" | "createdAt" | "updatedAt">) => void;
-  onCancel?: () => void;
+  existingStock?: Stock | null;
+  onSubmit: (stock: NewStock) => void;
+  onCancel: () => void;
   isPending: boolean;
 }
 
 type StockFormData = z.infer<typeof StockFormSchema>;
 
-export function StockForm({
+export default function StockForm({
   existingStock,
   onSubmit,
   onCancel,
@@ -70,7 +70,7 @@ export function StockForm({
     },
     [validateField]
   );
-  
+
   const handleSearch = useCallback((value: string) => {
     setSearchValue(value);
     if (value.trim()) {
@@ -87,26 +87,23 @@ export function StockForm({
     }
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const validatedData = StockFormSchema.parse(formData);
-      onSubmit({
-        ...validatedData,
-        userId: existingStock?.userId || "testuser123",
-      });
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const newErrors: Partial<Record<keyof StockFormData, string>> = {};
-        error.errors.forEach((err) => {
-          if (err.path[0]) {
-            newErrors[err.path[0] as keyof StockFormData] = err.message;
-          }
-        });
-        setErrors(newErrors);
-      }
-    }
-  };
+   const handleSubmit = (e: React.FormEvent) => {
+     e.preventDefault();
+     try {
+       const validatedData = StockFormSchema.parse(formData);
+       onSubmit(validatedData);
+     } catch (error) {
+       if (error instanceof z.ZodError) {
+         const newErrors: Partial<Record<keyof StockFormData, string>> = {};
+         error.errors.forEach((err) => {
+           if (err.path[0]) {
+             newErrors[err.path[0] as keyof StockFormData] = err.message;
+           }
+         });
+         setErrors(newErrors);
+       }
+     }
+   };
 
   useEffect(() => {
     // Validate all fields on mount and when existingStock changes

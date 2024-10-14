@@ -5,8 +5,7 @@ import { Edit, Trash2 } from "lucide-react";
 import { useRefreshEffect } from "@/hooks/use-refresh-effect";
 import { formatCurrency } from "@/lib/utils";
 import { TrendIcon } from "@/components/trend-icon";
-import { Stock } from "@/types/stock"; // Adjust this import based on where your Stock interface is defined
-
+import { Stock } from "@/types/stock"; 
 interface StockRowProps {
   stock: Stock & {
     currentPriceData: {
