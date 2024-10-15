@@ -39,22 +39,26 @@ export const LoginFormSchema = z.object({
   password: z.string().min(1, { message: "Password field must not be empty." }),
 });
 
-export type FormState =
-  | {
-      errors?: {
-        name?: string[];
-        email?: string[];
-        password?: string[];
-        confirmPassword?: string[];
-        acceptTerms?: string[];
-      };
-      message?: string;
-      success?: boolean;
-      userId?: string;
-    }
-  | undefined;
+export const FormStateSchema = z.object({
+  errors: z
+    .object({
+      name: z.array(z.string()).optional(),
+      email: z.array(z.string()).optional(),
+      password: z.array(z.string()).optional(),
+      confirmPassword: z.array(z.string()).optional(),
+      acceptTerms: z.array(z.string()).optional(),
+    })
+    .optional(),
+  message: z.string().optional(),
+  success: z.boolean().optional(),
+  userId: z.string().optional(),
+});
 
-export type SessionPayload = {
-  userId: string | number;
-  expiresAt: Date;
-};
+export type FormState = z.infer<typeof FormStateSchema>;
+
+export const SessionPayloadSchema = z.object({
+  userId: z.union([z.string(), z.number()]),
+  expiresAt: z.date(),
+});
+
+export type SessionPayload = z.infer<typeof SessionPayloadSchema>;
