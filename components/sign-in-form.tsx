@@ -63,7 +63,7 @@ export function SignInForm() {
   }
 
   return (
-    <Card className="mx-auto max-w-sm">
+    <Card className="mx-auto mt-8 max-w-sm">
       <CardHeader>
         <CardTitle className="text-xl">Sign In</CardTitle>
         <CardDescription>
