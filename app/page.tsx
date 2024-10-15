@@ -1,17 +1,17 @@
-import { auth, signIn, signOut } from "@/auth";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
 //use async function as getServerSession is promise
 export default async function Home() {
-   const session = await auth();
-  console.log("Session:", session);
+  const session = await auth();
 
-  return (
-    <div className="flex justify-center items-center w-full">
-      {session?.user ? (
-        <div>Welcome, {session.user.name} </div>
-      ) : (
-        <div>Please sign in to continue</div>
-      )}
-    </div>
-  );
+  if (!session) {
+    redirect("/auth/signin");
+  }
+if (session?.user) {
+    redirect("/dashboard");
+  }
+
+
+  return null
 }
