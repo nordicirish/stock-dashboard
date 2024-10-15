@@ -3,13 +3,12 @@ import "./globals.css";
 import ThemeContextProvider from "@/context/theme-switch";
 
 import SessionProvider from "@/components/session-provider";
-import { auth, signIn, signOut } from "@/auth";
+import { auth } from "@/auth";
 import NavMenu from "@/components/nav-menu";
 import { Inter } from "next/font/google";
 
 const inter = Inter({
   subsets: ["latin"],
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {

@@ -17,7 +17,7 @@ import { StockProvider } from "@/context/stock-context";
 
 export default function UserDashboard() {
   const { data: session, status } = useSession();
-  const [stocks, setStocks] = useState<Stock[]>([]);
+  const [stocks, setStocks] = useState<Stock[] | null>(null);
   const [currentPrices, setCurrentPrices] = useState<
     Record<string, { price: number; percentChange: number }>
   >({});
@@ -30,11 +30,12 @@ export default function UserDashboard() {
     setIsLoading(true);
     try {
       const fetchedStocks = await getStocks();
-      setStocks(fetchedStocks);
+      setStocks(fetchedStocks.length > 0 ? fetchedStocks : []);
       return fetchedStocks;
     } catch (error) {
       console.error("Error fetching stocks:", error);
       setError("Failed to fetch stocks. Please try again.");
+      setStocks([]);
     } finally {
       setIsLoading(false);
     }
@@ -131,16 +132,18 @@ export default function UserDashboard() {
   return (
     <StockProvider>
       <div className="flex-1 p-0 sm:p-4 ">
-        <StockPortfolio
-          stocks={stocks}
-          currentPrices={currentPrices}
-          onAddStock={handleAddStock}
-          onUpdateStock={handleUpdateStock}
-          onDeleteStock={handleDeleteStock}
-          isLoading={isLoading}
-          isPending={isPending}
-          error={error}
-        />
+        {stocks !== null && (
+          <StockPortfolio
+            stocks={stocks}
+            currentPrices={currentPrices}
+            onAddStock={handleAddStock}
+            onUpdateStock={handleUpdateStock}
+            onDeleteStock={handleDeleteStock}
+            isLoading={isLoading}
+            isPending={isPending}
+            error={error}
+          />
+        )}
         <div className="flex flex-col md:flex-row gap-6 justify-center w-full">
           <div className="w-full md:w-1/2">
             <StockLineChart />

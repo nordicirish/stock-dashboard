@@ -29,7 +29,7 @@ export async function decrypt(session: string | undefined = "") {
   }
 }
 
-// Create a new session using Prisma
+
 // Create a new session using Prisma
 export async function createSession(userId: string) {
   // 1. Set the expiration date for the session (7 days)

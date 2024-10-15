@@ -1,13 +1,8 @@
-import {SignUpForm } from "@/components/ui/signup-form";
-import  Link  from "next/link";
+import { SignUpForm } from "@/components/sign-up-form";
+import Link from "next/link";
 
 const SignUpPage = () => {
-    return (
-        
-            <SignUpForm />
-        
-    )
-}
+  return <SignUpForm />;
+};
 
-export default SignUpPage
-                
+export default SignUpPage;

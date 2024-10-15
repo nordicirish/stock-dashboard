@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { registerUser } from "@/app/actions/user-actions";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,29 +17,53 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FaGithub } from "react-icons/fa";
-import { signIn } from "next-auth/react";
-import { useFormState, useFormStatus } from "react-dom";
-import { FormState } from "@/types/zod-types";
-import { TermsModal } from "./terms-modal";
+import { registerUser } from "@/app/actions/user-actions";
+import { TermsModal } from "./ui/terms-modal";
 
 export function SignUpForm() {
+  const { data: session, status } = useSession();
   const router = useRouter();
-  const [state, formAction] = useFormState<FormState, FormData>(
-    registerUser,
-    {}
-  );
+  const [error, setError] = useState<string | null>(null);
   const [showTerms, setShowTerms] = useState(false);
 
-  useEffect(() => {
-    if (state && state.success) {
-      router.push("/dashboard");
+  const handleSubmit = async (formData: FormData) => {
+    try {
+      const result = await registerUser({}, formData);
+      if (result?.success) {
+        // Trigger a session update
+        await signIn("credentials", {
+          redirect: false,
+          email: formData.get("email") as string,
+          password: formData.get("password") as string,
+        });
+        router.push("/dashboard");
+      } else {
+        setError(result?.message || "Sign up failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error during sign up:", error);
+      setError("An unexpected error occurred. Please try again.");
     }
-  }, [state, router]);
-
-  const handleGitHubSignUp = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    signIn("github", { callbackUrl: "/dashboard" });
   };
+
+  const handleGitHubSignUp = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    try {
+      await signIn("github", { callbackUrl: "/dashboard" });
+    } catch (error) {
+      console.error("Error signing up with GitHub:", error);
+      setError("Failed to sign up with GitHub. Please try again.");
+    }
+  };
+
+  if (status === "loading") {
+    return <p>Loading...</p>;
+  }
+
+  if (status === "authenticated") {
+    router.push("/dashboard");
+    return null;
+  }
 
   return (
     <Card className="mx-auto max-w-sm">
@@ -49,13 +74,10 @@ export function SignUpForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="grid gap-4">
+        <form action={handleSubmit} className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="name">Name</Label>
             <Input id="name" name="name" placeholder="John Doe" required />
-            {state?.errors?.name && (
-              <p className="text-sm text-red-500">{state.errors.name}</p>
-            )}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
@@ -66,16 +88,10 @@ export function SignUpForm() {
               placeholder="john@example.com"
               required
             />
-            {state?.errors?.email && (
-              <p className="text-sm text-red-500">{state.errors.email}</p>
-            )}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="password">Password</Label>
             <Input id="password" name="password" type="password" required />
-            {state?.errors?.password && (
-              <p className="text-sm text-red-500">{state.errors.password}</p>
-            )}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="confirmPassword">Confirm Password</Label>
@@ -85,11 +101,6 @@ export function SignUpForm() {
               type="password"
               required
             />
-            {state?.errors?.confirmPassword && (
-              <p className="text-sm text-red-500">
-                {state.errors.confirmPassword}
-              </p>
-            )}
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox id="acceptTerms" name="acceptTerms" required />
@@ -104,10 +115,6 @@ export function SignUpForm() {
               </button>
             </Label>
           </div>
-          {state?.errors?.acceptTerms && (
-            <p className="text-sm text-red-500">{state.errors.acceptTerms}</p>
-          )}
-
           <SignupButton />
           <Button
             type="button"
@@ -119,15 +126,7 @@ export function SignUpForm() {
             Sign up with GitHub
           </Button>
         </form>
-        {state?.message && (
-          <p
-            className={`mt-4 text-sm ${
-              state.success ? "text-green-500" : "text-red-500"
-            }`}
-          >
-            {state.message}
-          </p>
-        )}
+        {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
         <div className="mt-4 text-center text-sm">
           Already have an account?{" "}
           <Link href="/auth/signin" className="underline">
@@ -145,7 +144,7 @@ function SignupButton() {
 
   return (
     <Button aria-disabled={pending} type="submit" className="mt-2 w-full">
-      {pending ? "Submitting..." : "Sign Up"}
+      {pending ? "Signing Up..." : "Sign Up"}
     </Button>
   );
 }

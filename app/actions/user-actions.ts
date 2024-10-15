@@ -1,12 +1,10 @@
-
-
 "use server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { hash } from "bcryptjs";
+import { hash, compare } from "bcryptjs";
 import { signIn } from "@/auth";
 import { createSession } from "./session-actions";
-import { FormState, SignupSchema } from "@/types/zod-types";
+import { FormState, SignupSchema, LoginFormSchema } from "@/types/zod-types";
 import { cookies } from "next/headers";
 
 export async function registerUser(
@@ -108,80 +106,68 @@ export async function registerUser(
     };
   }
 }
-// export async function login(
-//   state: FormState,
-//   formData: FormData,
-// ): Promise<FormState> {
-//   // 1. Validate form fields
-//   const validatedFields = LoginFormSchema.safeParse({
-//     email: formData.get('email'),
-//     password: formData.get('password'),
-//   });
-//   const errorMessage = { message: 'Invalid login credentials.' };
 
-//   // If any form fields are invalid, return early
-//   if (!validatedFields.success) {
-//     return {
-//       errors: validatedFields.error.flatten().fieldErrors,
-//     };
-//   }
-// }
 
-// export async function registerUser(
-//   userData: Omit<User, "id" | "image" | "emailVerified">
-// ) {
-//   const { name, email, password } = userData;
+export async function signInUser(
+  prevState: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const validatedFields = LoginFormSchema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password"),
+  });
 
-//   try {
-//     // Check if user already exists
-//     const existingUser = await prisma.user.findUnique({
-//       where: { email: email ?? "" },
-//     });
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Please correct the errors below.",
+      success: false,
+    };
+  }
 
-//     if (existingUser) {
-//       return { success: false, error: "User with this email already exists" };
-//     }
+  const { email, password } = validatedFields.data;
 
-//     // Hash the password
-//     const hashedPassword = await hash(password ?? "", 12);
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
 
-//     // Create the user
-//     const user = await prisma.user.create({
-//       data: {
-//         name,
-//         email,
-//         password: hashedPassword,
-//         emailVerified: null,
-//         image: null,
-//       },
-//     });
+    if (!user || !user.password) {
+      return {
+        message: "Invalid email or password. Please try again.",
+        success: false,
+      };
+    }
 
-//     // Sign in the user
-//     const signInResult = await signIn("credentials", {
-//       email: email,
-//       password: password,
-//       redirect: false,
-//     });
+    const passwordMatch = await compare(password, user.password);
 
-//     if (signInResult?.error) {
-//       console.error("Error signing in after registration:", signInResult.error);
-//       return { success: false, error: "Failed to sign in after registration" };
-//     }
+    if (!passwordMatch) {
+      return {
+        message: "Invalid email or password. Please try again.",
+        success: false,
+      };
+    }
 
-//     // Optionally, fetch the session again to ensure it's updated
-//     await getCurrentUserId(); // This will ensure the session is refreshed
+    const session = await createSession(user.id);
 
-//     return {
-//       success: true,
-//       user: { id: user.id, name: user.name, email: user.email },
-//       session: await createSession(user.id),
-//     };
-//   } catch (error) {
-//     console.error("Error registering user:", error);
-//     return { success: false, error: "Failed to register user" };
-//   }
-// }
+    cookies().set("session", session.sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 30 * 24 * 60 * 60, // 30 days
+      path: "/",
+    });
 
+    return {
+      message: "Signed in successfully.",
+      success: true,
+      userId: user.id,
+    };
+  } catch (error) {
+    console.error("Error in signInUser:", error);
+    return {
+      message: "An unexpected error occurred. Please try again.",
+      success: false,
+    };
+  }
+}
 export async function getCurrentUserId(): Promise<string> {
   const session = await auth();
   if (!session?.user?.id) {
@@ -189,4 +175,3 @@ export async function getCurrentUserId(): Promise<string> {
   }
   return session.user.id;
 }
-
