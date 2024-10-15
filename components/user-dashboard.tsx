@@ -59,14 +59,33 @@ export default function UserDashboard() {
     }
   }, [fetchStocks, fetchCurrentPrices]);
 
-  useEffect(() => {
-    if (status === "authenticated") {
-      refreshData();
-      const intervalId = setInterval(refreshData, 60000); // Refresh every 60 seconds
-      return () => clearInterval(intervalId);
-    }
-  }, [refreshData, status]);
+ useEffect(() => {
+   const fetchData = async () => {
+     if (!session?.user?.id) return;
 
+     setIsLoading(true);
+     try {
+       // Fetch stocks and prices in parallel
+       const fetchedStocks = await getStocks();
+       setStocks(fetchedStocks.length > 0 ? fetchedStocks : []);
+
+       if (fetchedStocks.length > 0) {
+         const symbols = fetchedStocks.map((stock) => stock.symbol);
+         const prices = await getCurrentPrices(symbols);
+         setCurrentPrices(prices);
+       }
+     } catch (error) {
+       console.error("Error fetching data:", error);
+       setError("Failed to fetch data. Please try again.");
+       setStocks([]);
+     } finally {
+       setIsLoading(false);
+     }
+   };
+
+   fetchData();
+ }, [session]);
+ 
   const handleAddStock = async (newStock: NewStock) => {
     if (!session?.user?.id) {
       setError("You must be logged in to add stocks.");
@@ -132,9 +151,9 @@ export default function UserDashboard() {
   return (
     <StockProvider>
       <div className="flex-1 p-0 sm:p-4 ">
-        {stocks !== null && (
+       
           <StockPortfolio
-            stocks={stocks}
+            stocks={stocks?? []}
             currentPrices={currentPrices}
             onAddStock={handleAddStock}
             onUpdateStock={handleUpdateStock}
@@ -143,7 +162,7 @@ export default function UserDashboard() {
             isPending={isPending}
             error={error}
           />
-        )}
+      
         <div className="flex flex-col md:flex-row gap-6 justify-center w-full">
           <div className="w-full md:w-1/2">
             <StockLineChart />
