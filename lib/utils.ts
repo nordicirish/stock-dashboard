@@ -106,12 +106,23 @@ export function formatDateLabel(timestamp: number, timezone: string): string {
 
 export function formatCurrency(
   value: number,
+  currency: "USD" | "EUR" = "USD", // Currency type
   minimumFractionDigits = 2,
   maximumFractionDigits = 2
 ): string {
-  return value.toLocaleString(undefined, {
+  // Map currency to locale
+  const currencyLocaleMap: { [key: string]: string } = {
+    USD: "en-US", // Locale for USD
+    EUR: "de-DE", // Locale for EUR (Germany) 
+  };
+
+  // Use the locale based on the selected currency
+  const locale = currencyLocaleMap[currency] || "en-US"; // Default to "en-US"
+
+  return value.toLocaleString(locale, {
     style: "currency",
-    currency: "USD",
+    currency: currency,
+    currencyDisplay: "symbol",
     minimumFractionDigits,
     maximumFractionDigits,
   });
