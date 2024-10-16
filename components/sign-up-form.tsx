@@ -24,21 +24,22 @@ export function SignUpForm() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [formErrors, setFormErrors] = useState<Record<string, string[]>>({});
   const [showTerms, setShowTerms] = useState(false);
 
   const handleSubmit = async (formData: FormData) => {
     try {
       const result = await registerUser({}, formData);
-      if (result?.success) {
-        // Trigger a session update
+      if (!result.success) {
+        setFormErrors(result.errors || {});
+        setError(result.message ?? null);
+      } else {
         await signIn("credentials", {
           redirect: false,
           email: formData.get("email") as string,
           password: formData.get("password") as string,
         });
         router.push("/dashboard");
-      } else {
-        setError(result?.message || "Sign up failed. Please try again.");
       }
     } catch (error) {
       console.error("Error during sign up:", error);
@@ -78,6 +79,9 @@ export function SignUpForm() {
           <div className="grid gap-2">
             <Label htmlFor="name">Name</Label>
             <Input id="name" name="name" placeholder="John Doe" required />
+            {formErrors.name && (
+              <p className="text-sm text-red-500">{formErrors.name[0]}</p>
+            )}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
@@ -88,10 +92,16 @@ export function SignUpForm() {
               placeholder="john@example.com"
               required
             />
+            {formErrors.email && (
+              <p className="text-sm text-red-500">{formErrors.email[0]}</p>
+            )}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="password">Password</Label>
             <Input id="password" name="password" type="password" required />
+            {formErrors.password && (
+              <p className="text-sm text-red-500">{formErrors.password[0]}</p>
+            )}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="confirmPassword">Confirm Password</Label>
@@ -101,6 +111,11 @@ export function SignUpForm() {
               type="password"
               required
             />
+            {formErrors.confirmPassword && (
+              <p className="text-sm text-red-500">
+                {formErrors.confirmPassword[0]}
+              </p>
+            )}
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox id="acceptTerms" name="acceptTerms" required />

@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-
-import { useSession, signIn, signOut } from "next-auth/react"; // need to import useSession rather than session as client component
+import { useSession, signIn, signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
@@ -24,6 +23,14 @@ export default function NavMenu() {
   const handleLinkClick = () => {
     setIsOpen(false);
   };
+
+  // Check if the user is on the sign-in or sign-up page so Sign In button doesn't show
+  const isAuthPage =
+    pathName.startsWith("/auth/signin") || pathName.startsWith("/auth/signup");
+
+ 
+  console.log("PathName:", pathName);
+  console.log("isAuthPage:", isAuthPage);
 
   return (
     <nav className="w-full h-[4rem] border-b border-opacity-40 bg-zinc-100/60 dark:bg-zinc-950/60 shadow-light-mode md: rounded-md dark:shadow-dark-mode flex items-center justify-between px-4 md:px-6 transition-all duration-300 ease-in-out">
@@ -66,12 +73,14 @@ export default function NavMenu() {
                   Sign Out
                 </Button>
               ) : (
-                <Button
-                  onClick={() => signIn()}
-                  className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white transition-all duration-300 h-10 rounded-lg shadow-md"
-                >
-                  Sign In
-                </Button>
+                !isAuthPage && (
+                  <Button
+                    onClick={() => signIn()}
+                    className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white transition-all duration-300 h-10 rounded-lg shadow-md"
+                  >
+                    Sign In
+                  </Button>
+                )
               )}
             </nav>
           </SheetContent>
@@ -106,12 +115,14 @@ export default function NavMenu() {
               Sign Out
             </Button>
           ) : (
-            <Button
-              onClick={() => signIn()}
-              className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white transition-all duration-300 h-full px-4 rounded-lg shadow-md"
-            >
-              Sign In
-            </Button>
+            !isAuthPage && (
+              <Button
+                onClick={() => signIn()}
+                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white transition-all duration-300 h-full px-4 rounded-lg shadow-md"
+              >
+                Sign In
+              </Button>
+            )
           )}
         </li>
         <li className="h-10 flex items-center">

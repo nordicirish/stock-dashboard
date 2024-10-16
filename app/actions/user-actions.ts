@@ -20,14 +20,15 @@ export async function registerUser(
     acceptTerms: formData.get("acceptTerms") === "on",
   });
 
+
   // If any form fields are invalid, return early
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: "Please correct the errors below.",
-      success: false,
-    };
-  }
+   if (!validatedFields.success) {
+     return {
+       errors: validatedFields.error.flatten().fieldErrors,
+       message: "Please correct the errors above.",
+       success: false,
+     };
+   }
 
   // 2. Prepare data for insertion into database
   const { name, email, password } = validatedFields.data;
