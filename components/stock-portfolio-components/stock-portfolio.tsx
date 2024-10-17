@@ -49,8 +49,8 @@ export function StockPortfolio() {
             </CardHeader>
             <CardContent>
               <p className="mb-4">
-                You haven't added any stocks yet. Get started by adding your
-                first stock!
+                You haven&apos;t added any stocks yet. Get started by adding
+                your first stock!
               </p>
               <button
                 onClick={() => setIsModalOpen(true)}
