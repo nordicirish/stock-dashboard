@@ -29,15 +29,15 @@ export default async function RootLayout({
       <SessionProvider session={session}>
         <html lang="en" className={inter.className}>
           <body
-            className="antialiased flex flex-col w-full min-h-screen pt-0 items-center justify-items-center max-w-[73rem] mx-auto bg-gradient-to-b from-blue-200 via-blue-300 to-gray-100 p-4
+            className="antialiased flex flex-col w-full min-h-screen pt-0 justify-center items-center justify-items-center mx-auto bg-gradient-to-b from-blue-200 via-blue-300 to-gray-100 p-4
             dark:bg-gradient-to-b dark:from-indigo-800 dark:via-indigo-900 dark:to-indigo-950
              text-gray-900 dark:text-gray-100"
           >
-            <header className="flex flex-col w-full h-full mt-4 mb-4">
+            <header className="flex flex-col w-full h-full mt-4 mb-4 max-w-[73rem]">
               <NavMenu />
             </header>
 
-            <main className="mx-auto w-full text-2xl flex gap-2 flex-col justify-center items-center h-full">
+            <main className="mx-auto w-full max-w-[73rem] text-2xl flex gap-2 flex-col justify-center items-center h-full">
               {children}
             </main>
           </body>
