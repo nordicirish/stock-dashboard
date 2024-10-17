@@ -24,14 +24,14 @@ import { useStock } from "@/context/stock-context";
 import { LoadingSpinner } from "../ui/loading-spinner";
 
 export default function StockLineChart() {
-  const { selectedStock } = useStock();
+  const { selectedStockListing } = useStock();
   const [selectedTimeframe, setSelectedTimeframe] = useState("1D");
   const [stockData, setStockData] = useState<StockData | null>(null);
   const [isPending, startTransition] = useTransition();
   const [defaultStock] = useState(getDefaultStock());
 
   const updateStockData = useCallback(() => {
-    const stockToFetch = selectedStock || defaultStock;
+    const stockToFetch = selectedStockListing || defaultStock;
     startTransition(async () => {
       try {
         const data = await fetchStockData(
@@ -43,7 +43,7 @@ export default function StockLineChart() {
         console.error("Error fetching stock data:", error);
       }
     });
-  }, [selectedStock, defaultStock, selectedTimeframe]);
+  }, [selectedStockListing, defaultStock, selectedTimeframe]);
 
   useEffect(() => {
     updateStockData();
@@ -70,12 +70,12 @@ export default function StockLineChart() {
             onTimeframeChange={handleTimeframeChange}
           />
         </div>
-        {!selectedStock && (
+        {!selectedStockListing && (
           <div className="text-sm text-gray-500 text-center mt-2">
             Showing {defaultStock.name} (Default)
           </div>
         )}
-        {(selectedStock || defaultStock) &&
+        {(selectedStockListing || defaultStock) &&
           selectedTimeframe === "1D" &&
           stockData && (
             <div className="text-sm text-gray-500 text-center mt-2">

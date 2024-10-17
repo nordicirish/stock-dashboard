@@ -19,22 +19,22 @@ interface StockSearchProps {
 export function StockSearch({
   placeholder = "Search stocks...",
 }: StockSearchProps) {
-  const { selectedStock, setSelectedStock } = useStock();
+  const { selectedStockListing, setSelectedStockListing } = useStock();
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [stocks, setStocks] = useState<StockListing[]>([]);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (selectedStock) {
-      setSearchValue(`${selectedStock.symbol} - ${selectedStock.name}`);
+    if (selectedStockListing) {
+      setSearchValue(`${selectedStockListing.symbol} - ${selectedStockListing.name}`);
     } else {
       setSearchValue("");
     }
-  }, [selectedStock]);
+  }, [selectedStockListing]);
 
-  const handleStockSelect = (stock: StockListing) => {
-    setSelectedStock(stock);
+  const handleStockSelect = (stockListing: StockListing) => {
+    setSelectedStockListing(stockListing);
     setOpen(false);
   };
 

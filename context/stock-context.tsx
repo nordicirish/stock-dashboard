@@ -1,7 +1,5 @@
 "use client";
 
-
-
 import React, {
   createContext,
   useState,
@@ -23,6 +21,8 @@ import { useSession } from "next-auth/react";
 type StockContextType = {
   selectedStock: Stock | null;
   setSelectedStock: (stock: Stock | null) => void;
+  selectedStockListing: StockListing | null;
+  setSelectedStockListing: (stockListing: StockListing | null) => void;
   stocks: Stock[];
   currentPrices: Record<string, { price: number; percentChange: number }>;
   isLoading: boolean;
@@ -40,6 +40,8 @@ const StockContext = createContext<StockContextType | undefined>(undefined);
 
 export function StockProvider({ children }: { children: ReactNode }) {
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
+  const [selectedStockListing, setSelectedStockListing] =
+    useState<StockListing | null>(null);
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [currentPrices, setCurrentPrices] = useState<
     Record<string, { price: number; percentChange: number }>
@@ -147,6 +149,8 @@ export function StockProvider({ children }: { children: ReactNode }) {
       value={{
         selectedStock,
         setSelectedStock,
+        selectedStockListing,
+        setSelectedStockListing,
         stocks,
         currentPrices,
         isLoading,
@@ -164,6 +168,7 @@ export function StockProvider({ children }: { children: ReactNode }) {
     </StockContext.Provider>
   );
 }
+
 export function useStock() {
   const context = useContext(StockContext);
   if (context === undefined) {
