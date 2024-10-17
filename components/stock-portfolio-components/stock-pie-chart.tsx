@@ -1,29 +1,22 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { Stock } from "@/types/stock";
 import { useIsMobile } from "@/hooks/use-mobile";
-
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { clsx } from "clsx";
+import { useStock } from "@/context/stock-context";
+import { useMemo } from "react";
 
-
-interface StockPieChartProps {
-  stocks: Stock[];
-  currentPrices: Record<string, { price: number; percentChange: number }>;
-  COLORS: string[];
-  isPending: boolean;
-  isLoading: boolean;
-}
-
-export function StockPieChart({
-  stocks,
-  currentPrices,
-  COLORS,
-  isPending,
-
-}: StockPieChartProps) {
+export function StockPieChart() {
+  const { stocks, currentPrices, isPending } = useStock();
   const isMobile = useIsMobile();
 
   const outerRadius = isMobile ? 100 : 140;
+
+  const COLORS = useMemo(() => {
+    return Array.from(
+      { length: stocks.length },
+      (_, i) => `hsl(${i * 50}, 40%, 50%)`
+    );
+  }, [stocks.length]);
 
   const pieData = stocks.map((stock) => ({
     symbol: stock.symbol,

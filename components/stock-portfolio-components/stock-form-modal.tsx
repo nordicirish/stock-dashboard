@@ -3,7 +3,7 @@ import { parseInputValue } from "@/lib/utils";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Stock, StockListing, NewStock } from "@/types/stock";
+import { StockListing } from "@/types/stock";
 import {
   Popover,
   PopoverContent,
@@ -26,29 +26,25 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-interface StockFormModalProps {
-  existingStock: Stock | null;
-  onSubmit: (stock: NewStock) => void;
-  onCancel: () => void;
-  isPending: boolean;
-  isOpen: boolean;
-}
+import { useStock } from "@/context/stock-context";
 
 type StockFormData = z.infer<typeof StockFormSchema>;
 
-export function StockFormModal({
-  existingStock,
-  onSubmit,
-  onCancel,
-  isPending,
-  isOpen,
-}: StockFormModalProps) {
+export function StockFormModal() {
+  const {
+    selectedStock,
+    handleAddStock,
+    handleUpdateStock,
+    isPending,
+    isModalOpen,
+    setIsModalOpen,
+  } = useStock();
+
   const [formData, setFormData] = useState<StockFormData>({
-    symbol: existingStock?.symbol || "",
-    name: existingStock?.name || "",
-    quantity: existingStock?.quantity || 0,
-    avgPrice: existingStock?.avgPrice || 0,
+    symbol: selectedStock?.symbol || "",
+    name: selectedStock?.name || "",
+    quantity: selectedStock?.quantity || 0,
+    avgPrice: selectedStock?.avgPrice || 0,
   });
   const [errors, setErrors] = useState<
     Partial<Record<keyof StockFormData, string>>
@@ -105,7 +101,12 @@ export function StockFormModal({
     e.preventDefault();
     try {
       const validatedData = StockFormSchema.parse(formData);
-      onSubmit(validatedData);
+      if (selectedStock) {
+        handleUpdateStock({ ...validatedData, id: selectedStock.id });
+      } else {
+        handleAddStock(validatedData);
+      }
+      setIsModalOpen(false);
     } catch (error) {
       if (error instanceof z.ZodError) {
         const newErrors: Partial<Record<keyof StockFormData, string>> = {};
@@ -120,23 +121,23 @@ export function StockFormModal({
   };
 
   useEffect(() => {
-    // Validate all fields on mount and when existingStock changes
+    // Validate all fields on mount and when selectedStock changes
     Object.keys(formData).forEach((key) => {
       validateField(
         key as keyof StockFormData,
         formData[key as keyof StockFormData]
       );
     });
-  }, [existingStock, validateField, formData]);
+  }, [selectedStock, validateField, formData]);
 
   useEffect(() => {
-    if (existingStock) {
+    if (selectedStock) {
       // Populate form with existing stock data for editing
       setFormData({
-        symbol: existingStock.symbol,
-        name: existingStock.name,
-        quantity: existingStock.quantity,
-        avgPrice: existingStock.avgPrice,
+        symbol: selectedStock.symbol,
+        name: selectedStock.name,
+        quantity: selectedStock.quantity,
+        avgPrice: selectedStock.avgPrice,
       });
     } else {
       // Clear form data when adding a new stock
@@ -147,15 +148,15 @@ export function StockFormModal({
         avgPrice: 0,
       });
     }
-  }, [existingStock]);
+  }, [selectedStock]);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onCancel}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={isModalOpen} onOpenChange={() => setIsModalOpen(false)}>
+      <DialogContent className="sm:max-w-md w-full">
         <DialogHeader>
           <DialogTitle>
-            {existingStock
-              ? `Edit Stock: ${existingStock.symbol}`
+            {selectedStock
+              ? `Edit Stock: ${selectedStock.symbol}`
               : "Add New Stock"}
           </DialogTitle>
         </DialogHeader>
@@ -169,9 +170,9 @@ export function StockFormModal({
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="stock-search">Stock</Label>
-                  {existingStock ? (
+                  {selectedStock ? (
                     <div className="p-2 bg-secondary rounded-md">
-                      {existingStock.symbol} - {existingStock.name}
+                      {selectedStock.symbol} - {selectedStock.name}
                     </div>
                   ) : (
                     <Popover open={open} onOpenChange={setOpen}>
@@ -275,7 +276,7 @@ export function StockFormModal({
                 <div className="flex justify-end space-x-2 mt-6">
                   <Button
                     type="button"
-                    onClick={onCancel}
+                    onClick={() => setIsModalOpen(false)}
                     variant="outline"
                     disabled={isPending}
                   >
@@ -288,7 +289,7 @@ export function StockFormModal({
                   >
                     {isPending
                       ? "Loading..."
-                      : existingStock
+                      : selectedStock
                       ? "Update"
                       : "Add"}{" "}
                     Stock

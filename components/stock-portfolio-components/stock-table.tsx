@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -7,27 +7,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useIsMobile } from "../../hooks/use-mobile";
-import { StockTableProps, SortOrder } from "@/types/stock";
-import {
-  calculatePercentChange,
-  getTrend,
-  getTrendColorClass,
-} from "@/lib/utils";
+import { SortOrder } from "@/types/stock";
+import { useStock } from "@/context/stock-context";
+import { StockRow } from "@/components/stock-portfolio-components/stock-row";
+import { useState, useMemo } from "react";
 
-import { StockRow } from "@/components/stock-portfolio-components/stock-row"; // Import StockRow component
+export function StockTable() {
+  const { stocks } = useStock();
 
-export function StockTable({
-  stocks,
-  currentPrices,
-  onEditStock,
-  onDeleteStock,
-  isLoading,
-}: StockTableProps) {
-  const { theme } = useTheme();
   const isMobile = useIsMobile();
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 
@@ -38,48 +28,6 @@ export function StockTable({
         : b.symbol.localeCompare(a.symbol);
     });
   }, [stocks, sortOrder]);
-
-  const stockData = useMemo(() => {
-    return sortedStocks.map((stock) => {
-      const currentPriceData = currentPrices[stock.symbol] || {
-        price: stock.avgPrice,
-        percentChange: 0,
-      };
-      const totalValue = stock.quantity * currentPriceData.price;
-      const dailyChangePerShare =
-        currentPriceData.price * (currentPriceData.percentChange / 100);
-      const totalGainValue =
-        (currentPriceData.price - stock.avgPrice) * stock.quantity;
-      const totalGainPercent = calculatePercentChange(
-        stock.avgPrice,
-        currentPriceData.price
-      );
-
-      const dailyTrend = getTrend(currentPriceData.percentChange);
-      const totalGainTrend = getTrend(totalGainValue);
-      const dailyTrendColorClass = getTrendColorClass(
-        dailyTrend,
-        theme || "light"
-      );
-      const totalGainColorClass = getTrendColorClass(
-        totalGainTrend,
-        theme || "light"
-      );
-
-      return {
-        ...stock,
-        currentPriceData,
-        totalValue,
-        dailyChangePerShare,
-        totalGainValue,
-        totalGainPercent,
-        dailyTrend,
-        totalGainTrend,
-        dailyTrendColorClass,
-        totalGainColorClass,
-      };
-    });
-  }, [sortedStocks, currentPrices, theme]);
 
   const handleSort = () => {
     setSortOrder(sortOrder === "asc" ? "desc" : "asc");
@@ -121,14 +69,8 @@ export function StockTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {stockData.map((stock) => (
-              <StockRow
-                key={stock.id}
-                stock={stock}
-                onEditStock={onEditStock}
-                onDeleteStock={onDeleteStock}
-                isMobile={isMobile ?? false}
-              />
+            {sortedStocks.map((stock) => (
+              <StockRow key={stock.id} stock={stock} isMobile={isMobile} />
             ))}
           </TableBody>
         </Table>

@@ -1,138 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback, useTransition } from "react";
 import { useSession } from "next-auth/react";
 import StockLineChart from "./stock-line-chart-components/stock-line-chart";
 import { StockPortfolio } from "./stock-portfolio-components/stock-portfolio";
-import { Stock, NewStock, UpdateStock } from "@/types/stock";
 import AiStockNews from "@/components/ai-stock-news";
-import {
-  getStocks,
-  updateStock,
-  deleteStock,
-  addStock,
-  getCurrentPrices,
-} from "@/app/actions/stock-actions";
 import { StockProvider } from "@/context/stock-context";
 
 export default function UserDashboard() {
-  const { data: session, status } = useSession();
-  const [stocks, setStocks] = useState<Stock[] | null>(null);
-  const [currentPrices, setCurrentPrices] = useState<
-    Record<string, { price: number; percentChange: number }>
-  >({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchStocks = useCallback(async () => {
-    if (!session?.user?.id) return;
-    setIsLoading(true);
-    try {
-      const fetchedStocks = await getStocks();
-      setStocks(fetchedStocks.length > 0 ? fetchedStocks : []);
-      return fetchedStocks;
-    } catch (error) {
-      console.error("Error fetching stocks:", error);
-      setError("Failed to fetch stocks. Please try again.");
-      setStocks([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [session]);
-
-  const fetchCurrentPrices = useCallback(async (stocksToFetch: Stock[]) => {
-    try {
-      const symbols = stocksToFetch.map((stock) => stock.symbol);
-      const prices = await getCurrentPrices(symbols);
-      setCurrentPrices(prices);
-    } catch (error) {
-      console.error("Error fetching current prices:", error);
-      setError("Failed to fetch current prices. Please try again.");
-    }
-  }, []);
-
-  const refreshData = useCallback(async () => {
-    const fetchedStocks = await fetchStocks();
-    if (fetchedStocks) {
-      await fetchCurrentPrices(fetchedStocks);
-    }
-  }, [fetchStocks, fetchCurrentPrices]);
-
- useEffect(() => {
-   const fetchData = async () => {
-     if (!session?.user?.id) return;
-
-     setIsLoading(true);
-     try {
-       // Fetch stocks and prices in parallel
-       const fetchedStocks = await getStocks();
-       setStocks(fetchedStocks.length > 0 ? fetchedStocks : []);
-
-       if (fetchedStocks.length > 0) {
-         const symbols = fetchedStocks.map((stock) => stock.symbol);
-         const prices = await getCurrentPrices(symbols);
-         setCurrentPrices(prices);
-       }
-     } catch (error) {
-       console.error("Error fetching data:", error);
-       setError("Failed to fetch data. Please try again.");
-       setStocks([]);
-     } finally {
-       setIsLoading(false);
-     }
-   };
-
-   fetchData();
- }, [session]);
- 
-  const handleAddStock = async (newStock: NewStock) => {
-    if (!session?.user?.id) {
-      setError("You must be logged in to add stocks.");
-      return;
-    }
-    try {
-      startTransition(async () => {
-        await addStock({ ...newStock, userId: session.user.id });
-        await refreshData();
-      });
-    } catch (error) {
-      console.error("Error adding stock:", error);
-      setError("Failed to add stock. Please try again.");
-    }
-  };
-
-  const handleUpdateStock = async (updatedStock: UpdateStock) => {
-    if (!session?.user?.id) {
-      setError("You must be logged in to update stocks.");
-      return;
-    }
-    try {
-      startTransition(async () => {
-        await updateStock(updatedStock);
-        await refreshData();
-      });
-    } catch (error) {
-      console.error("Error updating stock:", error);
-      setError("Failed to update stock. Please try again.");
-    }
-  };
-
-  const handleDeleteStock = async (stockId: number) => {
-    if (!session?.user?.id) {
-      setError("You must be logged in to delete stocks.");
-      return;
-    }
-    try {
-      startTransition(async () => {
-        await deleteStock(stockId);
-        await refreshData();
-      });
-    } catch (error) {
-      console.error("Error deleting stock:", error);
-      setError("Failed to delete stock. Please try again.");
-    }
-  };
+  const { status } = useSession();
 
   if (status === "loading") {
     return <div>Loading...</div>;
@@ -150,19 +25,8 @@ export default function UserDashboard() {
 
   return (
     <StockProvider>
-      <div className="flex-1 p-0 sm:p-4 ">
-       
-          <StockPortfolio
-            stocks={stocks?? []}
-            currentPrices={currentPrices}
-            onAddStock={handleAddStock}
-            onUpdateStock={handleUpdateStock}
-            onDeleteStock={handleDeleteStock}
-            isLoading={isLoading}
-            isPending={isPending}
-            error={error}
-          />
-      
+      <div className="flex-1 p-0 sm:p-4 w-full">
+        <StockPortfolio />
         <div className="flex flex-col md:flex-row gap-6 justify-center w-full">
           <div className="w-full md:w-1/2">
             <StockLineChart />

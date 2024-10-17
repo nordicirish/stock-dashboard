@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Stock } from "@/types/stock";
 import { TrendIcon } from "@/components/trend-icon";
 import { useTheme } from "next-themes";
 import {
@@ -14,22 +13,17 @@ import { Button } from "../ui/button";
 import { Plus } from "lucide-react";
 import { useRefreshEffect } from "@/hooks/use-refresh-effect";
 import { clsx } from "clsx";
+import { useStock } from "@/context/stock-context";
 
-interface PortfolioSummaryProps {
-  stocks: Stock[];
-  handleOpenModal: () => void;
-  isPending: boolean;
-  isLoading: boolean;
-  currentPrices: Record<string, { price: number; percentChange: number }>;
-}
-
-export function PortfolioSummary({
-  stocks,
-  currentPrices,
-  isPending,
-  handleOpenModal,
-}: PortfolioSummaryProps) {
+export function PortfolioSummary() {
+  const { stocks, currentPrices, isPending, setIsModalOpen, setSelectedStock } =
+    useStock();
   const { theme } = useTheme();
+
+  const handleOpenModal = () => {
+    setSelectedStock(null);
+    setIsModalOpen(true);
+  };
 
   const { totalValue, totalGain, totalGainPercent, trend, trendColorClass } =
     useMemo(() => {
