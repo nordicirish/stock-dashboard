@@ -4,19 +4,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StockListing } from "@/types/stock";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  ChevronsUpDown,
-  Search,
-  DollarSign,
-  Hash,
-  Loader2,
-} from "lucide-react";
-import { searchStocks } from "@/app/actions/stock-actions";
+import { DollarSign, Hash, Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { StockFormSchema } from "@/types/zod-types";
@@ -27,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useStock } from "@/context/stock-context";
+import { StockSearchPopover } from "@/components/stock-search-popover";
 
 type StockFormData = z.infer<typeof StockFormSchema>;
 
@@ -49,9 +38,6 @@ export function StockFormModal() {
   const [errors, setErrors] = useState<
     Partial<Record<keyof StockFormData, string>>
   >({});
-  const [open, setOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
-  const [stocks, setStocks] = useState<StockListing[]>([]);
 
   const validateField = useCallback(
     (field: keyof StockFormData, value: string | number) => {
@@ -81,22 +67,6 @@ export function StockFormModal() {
     [validateField]
   );
 
-  const handleSearch = useCallback((value: string) => {
-    setSearchValue(value);
-    if (value.trim()) {
-      searchStocks(value)
-        .then((results) => {
-          setStocks(results || []);
-        })
-        .catch((error) => {
-          console.error("Error searching stocks:", error);
-          setStocks([]);
-        });
-    } else {
-      setStocks([]);
-    }
-  }, []);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -120,19 +90,13 @@ export function StockFormModal() {
     }
   };
 
-  useEffect(() => {
-    // Validate all fields on mount and when selectedStock changes
-    Object.keys(formData).forEach((key) => {
-      validateField(
-        key as keyof StockFormData,
-        formData[key as keyof StockFormData]
-      );
-    });
-  }, [selectedStock, validateField, formData]);
+  const handleStockSelect = (stock: StockListing) => {
+    handleInputChange("symbol", stock.symbol);
+    handleInputChange("name", stock.name);
+  };
 
   useEffect(() => {
     if (selectedStock) {
-      // Populate form with existing stock data for editing
       setFormData({
         symbol: selectedStock.symbol,
         name: selectedStock.name,
@@ -140,7 +104,6 @@ export function StockFormModal() {
         avgPrice: selectedStock.avgPrice,
       });
     } else {
-      // Clear form data when adding a new stock
       setFormData({
         symbol: "",
         name: "",
@@ -175,58 +138,15 @@ export function StockFormModal() {
                       {selectedStock.symbol} - {selectedStock.name}
                     </div>
                   ) : (
-                    <Popover open={open} onOpenChange={setOpen}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          id="stock-search"
-                          variant="outline"
-                          role="combobox"
-                          aria-expanded={open}
-                          className="w-full justify-between"
-                        >
-                          {formData.symbol
-                            ? `${formData.symbol} - ${formData.name}`
-                            : "Search stocks..."}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-full p-0">
-                        <div className="flex items-center border-b p-2">
-                          <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-                          <input
-                            className="flex-grow bg-transparent outline-none"
-                            placeholder="Search stocks..."
-                            value={searchValue}
-                            onChange={(e) => handleSearch(e.target.value)}
-                          />
-                        </div>
-                        <div className="max-h-[200px] overflow-y-auto">
-                          {stocks.length > 0 ? (
-                            <ul className="p-2">
-                              {stocks.map((stock) => (
-                                <li
-                                  key={stock.symbol}
-                                  className="cursor-pointer p-2 hover:bg-accent text-foreground"
-                                  onClick={() => {
-                                    handleInputChange("symbol", stock.symbol);
-                                    handleInputChange("name", stock.name);
-                                    setOpen(false);
-                                  }}
-                                >
-                                  {stock.symbol} - {stock.name}
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p className="p-2 text-center text-muted-foreground">
-                              {searchValue
-                                ? "No stocks found."
-                                : "Start typing to search stocks."}
-                            </p>
-                          )}
-                        </div>
-                      </PopoverContent>
-                    </Popover>
+                    <StockSearchPopover
+                      placeholder="Search stocks..."
+                      onSelect={handleStockSelect}
+                      selectedStock={
+                        formData.symbol && formData.name
+                          ? { symbol: formData.symbol, name: formData.name }
+                          : null
+                      }
+                    />
                   )}
                   {errors.symbol && (
                     <p className="text-sm text-red-500">{errors.symbol}</p>
