@@ -9,7 +9,7 @@ export function StockPieChart() {
   const { stocks, currentPrices, isPending } = useStock();
   const isMobile = useIsMobile();
 
-  const outerRadius = isMobile ? 100 : 140;
+  const outerRadius = isMobile ? 120 : 140;
 
   const COLORS = useMemo(() => {
     return Array.from(

@@ -14,9 +14,10 @@ import { SortOrder } from "@/types/stock";
 import { useStock } from "@/context/stock-context";
 import { StockRow } from "@/components/stock-portfolio-components/stock-row";
 import { useState, useMemo } from "react";
+import { clsx } from "clsx";
 
 export function StockTable() {
-  const { stocks } = useStock();
+  const { stocks, isPending } = useStock();
 
   const isMobile = useIsMobile();
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
@@ -34,12 +35,16 @@ export function StockTable() {
   };
 
   return (
-    <Card className="w-full">
+   
+    <Card className= "w-full">
       <CardHeader>
         <CardTitle>Stock Portfolio</CardTitle>
       </CardHeader>
       <CardContent className="overflow-x-auto">
-        <Table>
+        <Table className={clsx(
+        "transition-all duration-500 ease-in-out",
+        isPending ? "opacity-50 scale-95" : "opacity-100 scale-100"
+      )}>
           <TableHeader className="dark:bg-slate-950/50 bg-slate-200/50">
             <TableRow>
               <TableHead

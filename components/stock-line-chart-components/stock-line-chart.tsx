@@ -22,6 +22,8 @@ import {
 } from "@/lib/utils";
 import { useStock } from "@/context/stock-context";
 import { LoadingSpinner } from "../ui/loading-spinner";
+import { clsx } from "clsx";
+
 
 export default function StockLineChart() {
   const { selectedStockListing } = useStock();
@@ -83,7 +85,10 @@ export default function StockLineChart() {
             </div>
           )}
       </CardHeader>
-      <CardContent className="flex-grow">
+      <CardContent className={clsx(
+        "transition-all duration-500 ease-in-out flex-grow",
+        isPending ? "opacity-50 scale-95" : "opacity-100 scale-100"
+      )}>
         {" "}
         {/* Container for LineChart */}
         {isPending ? (
