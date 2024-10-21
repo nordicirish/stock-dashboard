@@ -10,8 +10,8 @@ import { getDefaultStock } from "@/lib/utils";
 import { LoadingSpinner } from "./ui/loading-spinner";
 
 export default function AiStockNews() {
-  const { selectedStock } = useStock(); // Use selected stock from context
-  const stock = selectedStock || getDefaultStock(); // Use default stock if none selected
+  const { selectedStockListing } = useStock(); // Use selected stock from context
+  const stock = selectedStockListing || getDefaultStock(); // Use default stock if none selected
 
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [latestNews, setLatestNews] = useState<
@@ -37,7 +37,7 @@ export default function AiStockNews() {
       }
     }
 
-    fetchStockData( stock.name);
+    fetchStockData(stock.name);
   }, [stock.name]);
 
   return (
