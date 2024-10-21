@@ -3,7 +3,7 @@ import { parseInputValue } from "@/lib/utils";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { StockListing } from "@/types/stock";
+import { StockListing, Stock } from "@/types/stock";
 import { DollarSign, Hash, Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,9 +13,11 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { useStock } from "@/context/stock-context";
 import { StockSearchPopover } from "@/components/stock-search-popover";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type StockFormData = z.infer<typeof StockFormSchema>;
 
@@ -27,6 +29,7 @@ export function StockFormModal() {
     isPending,
     isModalOpen,
     setIsModalOpen,
+    stocks,
   } = useStock();
 
   const [formData, setFormData] = useState<StockFormData>({
@@ -38,6 +41,8 @@ export function StockFormModal() {
   const [errors, setErrors] = useState<
     Partial<Record<keyof StockFormData, string>>
   >({});
+  const [showWarning, setShowWarning] = useState(false);
+  const [existingStock, setExistingStock] = useState<Stock | null>(null);
 
   const validateField = useCallback(
     (field: keyof StockFormData, value: string | number) => {
@@ -71,12 +76,24 @@ export function StockFormModal() {
     e.preventDefault();
     try {
       const validatedData = StockFormSchema.parse(formData);
+      const existingStock = stocks.find(
+        (stock) => stock.symbol === validatedData.symbol
+      );
+
+      if (existingStock && !selectedStock) {
+        setShowWarning(true);
+        setExistingStock(existingStock);
+        return;
+      }
+
       if (selectedStock) {
         handleUpdateStock({ ...validatedData, id: selectedStock.id });
       } else {
         handleAddStock(validatedData);
       }
       setIsModalOpen(false);
+      setShowWarning(false);
+      setExistingStock(null);
     } catch (error) {
       if (error instanceof z.ZodError) {
         const newErrors: Partial<Record<keyof StockFormData, string>> = {};
@@ -93,6 +110,23 @@ export function StockFormModal() {
   const handleStockSelect = (stock: StockListing) => {
     handleInputChange("symbol", stock.symbol);
     handleInputChange("name", stock.name);
+  };
+
+  const handleProceed = () => {
+    if (existingStock) {
+      const updatedStock = {
+        id: existingStock.id, // Include the id
+        symbol: existingStock.symbol,
+        name: existingStock.name,
+        quantity:  formData.quantity,
+        avgPrice: formData.avgPrice,
+          
+      };
+      handleUpdateStock(updatedStock);
+      setIsModalOpen(false);
+      setShowWarning(false);
+      setExistingStock(null);
+    }
   };
 
   useEffect(() => {
@@ -127,6 +161,25 @@ export function StockFormModal() {
           <div className="flex justify-center items-center p-4">
             <Loader2 className="h-8 w-8 animate-spin" />
           </div>
+        ) : showWarning ? (
+          <Alert>
+            <AlertTitle className="text-yellow-600">Warning</AlertTitle>
+            <AlertDescription className="text-yellow-600">
+              This stock already exists in your portfolio. Do you want to update
+              the existing stock?
+            </AlertDescription>
+            <DialogFooter className="mt-4">
+              <Button variant="outline" onClick={() => setShowWarning(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleProceed}
+                className="bg-yellow-500 hover:bg-yellow-600 text-white"
+              >
+                Proceed
+              </Button>
+            </DialogFooter>
+          </Alert>
         ) : (
           <Card className="w-full max-w-md mx-auto">
             <CardContent>
