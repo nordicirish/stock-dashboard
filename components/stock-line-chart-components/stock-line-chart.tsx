@@ -24,7 +24,6 @@ import { useStock } from "@/context/stock-context";
 import { LoadingSpinner } from "../ui/loading-spinner";
 import { clsx } from "clsx";
 
-
 export default function StockLineChart() {
   const { selectedStockListing } = useStock();
   const [selectedTimeframe, setSelectedTimeframe] = useState("1D");
@@ -65,7 +64,8 @@ export default function StockLineChart() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex flex-col w-full max-w-md mx-auto sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+        <h2 className="text-2xl font-semibold mb-4">Research and Analysis </h2>
+        <div className="flex flex-col w-full mx-auto sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
           <StockSearch placeholder="Search stocks..." />
           <TimeframeSelect
             selectedTimeframe={selectedTimeframe}
@@ -73,7 +73,7 @@ export default function StockLineChart() {
           />
         </div>
         {!selectedStockListing && (
-          <div className="text-sm text-gray-500 text-center mt-2">
+          <div className="text-sm text-gray-500 text-center pt-4">
             Showing {defaultStock.name} (Default)
           </div>
         )}
@@ -85,10 +85,12 @@ export default function StockLineChart() {
             </div>
           )}
       </CardHeader>
-      <CardContent className={clsx(
-        "transition-all duration-500 ease-in-out flex-grow",
-        isPending ? "opacity-50 scale-95" : "opacity-100 scale-100"
-      )}>
+      <CardContent
+        className={clsx(
+          "transition-all duration-500 ease-in-out flex-grow",
+          isPending ? "opacity-50 scale-95" : "opacity-100 scale-100"
+        )}
+      >
         {" "}
         {/* Container for LineChart */}
         {isPending ? (
